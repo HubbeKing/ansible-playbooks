@@ -1,0 +1,23 @@
+- name: "Cordon node"
+  command: kubectl cordon {{ host }}
+  delegate_to: 127.0.0.1
+
+- name: "Request longhorn replica drain"
+  command: "kubectl -n longhorn-system patch nodes.longhorn.io {{ host }} --patch '{\"spec\": {\"allowScheduling\": false, \"evictionRequested\": true}}' --type=merge"
+  delegate_to: 127.0.0.1
+  when:
+    - "'k8s_worker' in group_names"
+
+- name: "Wait for longhorn replicas to be evicted"
+  shell: test $(kubectl -n longhorn-system get nodes.longhorn.io {{ host }} -o json|jq .status.diskStatus.data.scheduledReplica|jq length) -eq 0
+  register: longhorn_replica_count
+  delegate_to: 127.0.0.1
+  until: longhorn_replica_count.rc == 0
+  retries: 120
+  delay: 30
+  when:
+    - "'k8s_worker' in group_names"
+
+- name: "Drain node"
+  command: kubectl drain {{ host }} --ignore-daemonsets --delete-emptydir-data
+  delegate_to: 127.0.0.1

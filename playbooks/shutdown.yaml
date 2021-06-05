@@ -1,0 +1,16 @@
+- hosts: "{{ inventory_hosts }}"
+  serial: 1
+  vars_prompt:
+    - name: "inventory_hosts"
+      prompt: "Shut down which host or group in inventory?"
+      private: no
+  tasks:
+    - import_tasks: tasks/drain_node.yaml
+      vars:
+        host: "{{ inventory_hostname }}"
+      when: "'k8s_cluster' in group_names"
+
+    - name: "Shut down host"
+      become: true
+      become_user: root
+      community.general.shutdown:
