@@ -27,12 +27,18 @@ all:
     pihole:
       hosts:
         pihole_1:
+    longhorn_storage_nodes:
+      hosts:
+        valkyrie:
+        pegasus:
+        ixion:
+        atlantia:
     k8s_control_plane:
       hosts:
         acerslab:
         raptor:
         viper:
-    k8s_worker:
+    k8s_workers:
       hosts:
         galactica:
         valkyrie:
@@ -42,4 +48,4 @@ all:
     k8s_cluster:
       children:
         k8s_control_plane:
-        k8s_worker:
+        k8s_workers:
