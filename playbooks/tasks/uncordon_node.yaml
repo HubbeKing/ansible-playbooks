@@ -18,10 +18,10 @@
   retries: 30
   delay: 10
   when:
-    - "'k8s_worker' in group_names"
+    - "'longhorn_storage_nodes' in group_names"
 
 - name: "Re-enable longhorn replica scheduling"
   command: "kubectl -n longhorn-system patch nodes.longhorn.io {{ host }} --patch '{\"spec\": {\"allowScheduling\": true, \"evictionRequested\": false}}' --type=merge"
   delegate_to: 127.0.0.1
   when:
-    - "'k8s_worker' in group_names"
+    - "'longhorn_storage_nodes' in group_names"
