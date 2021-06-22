@@ -3,14 +3,12 @@
   serial: 1
   vars_prompt:
     - name: "inventory_hosts"
-      prompt: "Upgrade kubernetess on which host or group in inventory?"
+      prompt: "Upgrade kubernetes on which host or group in inventory?"
       private: no
     - name: "k8s_version"
       prompt: "Upgrade cluster to which kubernetes version?"
       private: no
   tasks:
-    # TODO sequencing - go through control-plane first, then remaining control-plane, then workers
-
     # unhold packages
     - name: "Unhold k8s packages"
       become: true
@@ -144,8 +142,3 @@
     - import_tasks: tasks/uncordon_node.yaml
       vars:
         host: "{{ inventory_hostname }}"
-
-    # wait for user input to continue to next node
-    - name: "Proceed to next node"
-      pause:
-        prompt: "Press enter to continue to next node in sequence"
