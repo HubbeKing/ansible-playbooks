@@ -9,7 +9,7 @@
     - "'longhorn_storage_nodes' in group_names"
 
 - name: "Wait for longhorn replicas to be evicted"
-  shell: test $(kubectl -n longhorn-system get nodes.longhorn.io {{ host }} -o json|jq .status.diskStatus.data.scheduledReplica|jq length) -eq 0
+  shell: test $(kubectl -n longhorn-system get nodes.longhorn.io {{ host }} -o json|jq .status.diskStatus|jq .[]|jq .scheduledReplica|jq -s add|jq length) -eq 0
   register: longhorn_replica_count
   delegate_to: 127.0.0.1
   until: longhorn_replica_count.rc == 0
