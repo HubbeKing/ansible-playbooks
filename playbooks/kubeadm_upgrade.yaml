@@ -9,6 +9,11 @@
       prompt: "Upgrade cluster to which kubernetes version?"
       private: no
   tasks:
+    # drain
+    - import_tasks: tasks/drain_node.yaml
+      vars:
+        host: "{{ inventory_hostname }}"
+
     # unhold packages
     - name: "Unhold k8s packages"
       become: true
@@ -49,11 +54,6 @@
       become_user: root
       command: kubeadm upgrade node
       when: inventory_hostname != "acerslab"
-
-    # drain
-    - import_tasks: tasks/drain_node.yaml
-      vars:
-        host: "{{ inventory_hostname }}"
 
     # upgrade kubelet & kubectl packages
     - name: "Upgrade kubelet and kubectl"
