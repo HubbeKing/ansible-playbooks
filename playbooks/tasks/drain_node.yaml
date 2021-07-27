@@ -1,7 +1,3 @@
-- name: "Cordon node"
-  command: kubectl cordon {{ host }}
-  delegate_to: 127.0.0.1
-
 - name: "Request longhorn replica drain"
   command: "kubectl -n longhorn-system patch nodes.longhorn.io {{ host }} --patch '{\"spec\": {\"allowScheduling\": false, \"evictionRequested\": true}}' --type=merge"
   delegate_to: 127.0.0.1
