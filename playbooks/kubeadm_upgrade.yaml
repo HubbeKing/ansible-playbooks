@@ -14,11 +14,11 @@
       vars:
         host: "{{ inventory_hostname }}"
 
-    # unhold packages
+    # unhold k8s packages
     - name: "Unhold k8s packages"
       become: true
       become_user: root
-      command: apt-mark unhold kubeadm kubectl kubelet cri-o cri-o-runc
+      command: apt-mark unhold kubeadm kubectl kubelet
 
     # upgrade kubeadm package
     - name: "Upgrade kubeadm package"
@@ -76,67 +76,31 @@
         name: kubectl
         selection: hold
 
-    # ensure we have the correct version of cri-o for the k8s version we're upgrading to
-    - name: "Gather facts on installed packages"
-      package_facts:
-        manager: "apt"
-    - name: "Check installed cri-o version"
-      set_fact:
-        crio_version: "{{ ansible_facts.packages['cri-o'][0].version.split('~')[0] }}"
-    - name: "Determine installed cri-o minor version"  # this is the version of cri-o we have (e.g. 1.20)
-      set_fact:
-        crio_minor_version: "{{ crio_version.split('.')[0] }}.{{ crio_version.split('.')[1] }}"
-    - name: "Build cri-o version string"  # this is the version of cri-o we want (e.g. 1.21)
-      set_fact:
-        crio_version_str: "{{ k8s_version.split('.')[0] }}.{{ k8s_version.split('.')[1] }}"
-    - name: "Build cri-o OS string"
-      set_fact:
-        crio_os_str: "xUbuntu_{{ ansible_distribution_version }}"
-    - name: "Check apt sources for cri-o packages"
-      when: "{{ crio_minor_version }} != {{ crio_version_str }}"  # installed cri-o minor version doesn't match desired k8s minor version we're upgrading to
+    # upgrade containerd.io
+    - name: "Unhold containerd.io"
       become: true
       become_user: root
-      command: "{{ item }} chdir=/etc/apt/sources.list.d/"
-      with_items:  # add apt sources for the cri-o minor version we need
-        - echo "deb https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/{{ crio_os_str }}/ /" > /etc/apt/sources.list.d/devel:kubic:libcontainers:stable.list
-        - echo "deb https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable:/cri-o:/{{ crio_version_str }}/{{ crio_os_str }}/ /" > /etc/apt/sources.list.d/devel:kubic:libcontainers:stable:cri-o:{{ crio_version_str }}.list
-        - curl -L https://download.opensuse.org/repositories/devel:kubic:libcontainers:stable:cri-o:{{ crio_version_str }}/{{ crio_os_str }}/Release.key | apt-key add -
-        - curl -L https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/{{ crio_os_str }}/Release.key | apt-key add -
-
-    # upgrade cri-o and cri-o-runc
-    - name: "Unhold cri-o and cri-o-runc"
-      become: true
-      become_user: root
-      command: apt-mark unhold cri-o cri-o-runc
+      command: apt-mark unhold containerd.io
     - name: "Upgrade cri-o and cri-o-runc"
       become: true
       become_user: root
       apt: name={{ item }} state=latest update_cache=yes
       with_items:
-        - cri-o
-        - cri-o-runc
-    - name: "Hold cri-o package"
+        - containerd.io
+    - name: "Hold containerd.io"
       become: true
       become_user: root
-      dpkg_selections:
-        name: cri-o
-        selection: hold
-    - name: "Hold cri-o-runc package"
-      become: true
-      become_user: root
-      dpkg_selections:
-        name: cri-o-runc
-        selection: hold
+      command: apt-mark hold containerd.io
 
-    # restart kubelet & crio
+    # restart kubelet & containerd.io
     - name: "Reload systemctl"
       become: true
       become_user: root
       command: systemctl daemon-reload
-    - name: "Restart crio and kubelet"
+    - name: "Restart containerd and kubelet"
       become: true
       become_user: root
-      command: systemctl restart crio kubelet
+      command: systemctl restart containerd kubelet
 
     # uncordon node
     - import_tasks: tasks/uncordon_node.yaml
