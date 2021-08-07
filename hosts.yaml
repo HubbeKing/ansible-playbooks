@@ -29,6 +29,17 @@ all:
     pihole:
       hosts:
         pihole_1:
+    ubuntu_servers:
+      hosts:
+        raptor:
+        viper:
+        acerslab:
+        galactica:
+        valkyrie:
+        pegasus:
+        ixion:
+        atlantia:
+        rycon:
     longhorn_storage_nodes:
       hosts:
         valkyrie:

@@ -1,0 +1,41 @@
+- hosts: "{{ inventory_hosts }}"
+  serial: 1
+  vars_prompt:
+    - name: "inventory_hosts"
+      prompt: "Run do-release-upgrade on which host or group in inventory?"
+      private: no
+  tasks:
+    # drain node
+    - import_tasks: tasks/drain_node.yaml
+      vars:
+        host: "{{ inventory_hostname }}"
+      when: "'k8s_cluster' in group_names"
+
+    - name: "Run full upgrade"
+      become: true
+      become_user: root
+      apt:
+        upgrade: full
+        update_cache: "yes"
+
+    - name: "Run release upgrade"
+      become: true
+      become_user: root
+      command: do-release-upgrade -f DistUpgradeViewNonInteractive
+
+    - name: "Reboot host"
+      become: true
+      become_user: root
+      reboot:
+        msg: "Reboot initiated by Ansible for release upgrade"
+        connect_timeout: 5
+        reboot_timeout: 600
+        pre_reboot_delay: 0
+        post_reboot_delay: 60
+        test_command: uptime
+
+    # uncordon node
+    - import_tasks: tasks/uncordon_node.yaml
+      vars:
+        host: "{{ inventory_hostname }}"
+      when: "'k8s_cluster' in group_names"
