@@ -1,0 +1,70 @@
+- hosts: "blocky"
+  serial: 1
+  become: true
+  become_user: root
+  tasks:
+    # deploy blocky config
+    - name: "Ensure blocky dir exists"
+      file:
+        path: /etc/blocky
+        state: directory
+        mode: 0644
+    - name: "Deploy blocky config"
+      copy:
+        src: ../blocky/config.yml
+        dest: /etc/blocky/config.yml
+        mode: 0644
+
+    # deploy blocky
+    - name: "Ensure blocky container is deployed"
+      community.docker.docker_container:
+        name: blocky
+        image: ghcr.io/0xerr0r/blocky:v0.15
+        privileged: true
+        restart: true
+        restart_policy: unless-stopped
+        state: started
+        ports:
+          - "80:80"
+          - "53:53/tcp"
+          - "53:53/udp"
+        volumes:
+          - /etc/blocky/config.yml:/app/config.yml
+
+    # deploy keepalived config
+    - name: "Ensure keepalived dir exists"
+      file:
+        path: /etc/keepalived
+        state: directory
+        mode: 0644
+    - name: Deploy keepalived.conf if primary DNS
+      copy:
+        src: ../blocky/keepalived_primary.conf
+        dest: /etc/keepalived/keepalived.conf
+        mode: 0644
+      when: inventory_hostname == groups['blocky'][0]
+    - name: Deploy keepalived.conf if secondary DNS
+      copy:
+        src: ../blocky/keepalived_secondary.conf
+        dest: /etc/keepalived/keepalived.conf
+        mode: 0644
+      when: inventory_hostname != groups['blocky'][0]
+    - name: Deploy DNS check script
+      copy:
+        src: ../blocky/check_dns.sh
+        dest: /etc/keepalived/check_dns.sh
+        mode: 0755
+
+    # deploy keepalived
+    - name: "Ensure keepalived container is deployed"
+      community.docker.docker_container:
+        name: keepalived
+        image: docker.io/linkvt/osixia_keepalived:stable
+        network_mode: host
+        privileged: true
+        restart: true
+        restart_policy: unless-stopped
+        state: started
+        volumes:
+          - /etc/keepalived/keepalived.conf:/usr/local/etc/keepalived/keepalived.conf
+          - /etc/keepalived/check_dns.sh:/etc/keepalived/check_dns.sh

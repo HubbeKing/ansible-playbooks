@@ -1,40 +1,50 @@
 all:
   hosts:
-    pihole_1:
-      ansible_host: 192.168.1.101
     raptor:
-      ansible_host: 192.168.1.102
+      ansible_host: 192.168.1.101
     viper:
+      ansible_host: 192.168.1.102
+    rpi2:
       ansible_host: 192.168.1.103
-    acerslab:
-      ansible_host: 192.168.1.120
+
     galactica:
+      # NAS
       ansible_host: 192.168.1.121
-    valkyrie:
+    pacifica:
+      # DeskMini
       ansible_host: 192.168.1.122
-    pegasus:
+    archeron:
+      # acerslab
       ansible_host: 192.168.1.123
+
+    valkyrie:
+      ansible_host: 192.168.1.131
+    pegasus:
+      ansible_host: 192.168.1.132
     ixion:
-      ansible_host: 192.168.1.124
+      ansible_host: 192.168.1.133
     atlantia:
-      ansible_host: 192.168.1.125
+      ansible_host: 192.168.1.134
     rycon:
-      ansible_host: 192.168.1.126
+      ansible_host: 192.168.1.135
+
   children:
     rpi:
       hosts:
-        pihole_1:
         raptor:
         viper:
-    pihole:
+        rpi2:
+    blocky:
       hosts:
-        pihole_1:
+        viper:
+        rpi2:
     ubuntu_servers:
       hosts:
         raptor:
         viper:
-        acerslab:
         galactica:
+        pacifica:
+        archeron:
         valkyrie:
         pegasus:
         ixion:
@@ -49,9 +59,9 @@ all:
         rycon:
     k8s_control_plane:
       hosts:
-        acerslab:
+        archeron:
+        pacifica:
         raptor:
-        viper:
     k8s_workers:
       hosts:
         valkyrie:

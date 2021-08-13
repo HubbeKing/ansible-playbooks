@@ -18,12 +18,6 @@
         upgrade: full
         update_cache: "yes"
 
-    - name: "Update pihole"
-      become: true
-      become_user: root
-      command: pihole -up
-      when: "'pihole' in group_names"
-
     - name: "Check if reboot is required"
       become: true
       become_user: root
