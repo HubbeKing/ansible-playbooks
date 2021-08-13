@@ -42,18 +42,18 @@
       become: true
       become_user: root
       command: kubeadm upgrade plan
-      when: inventory_hostname == "acerslab"
+      when: inventory_hostname == groups['k8s_control_plane'][0]
     - name: "Apply kubeadm upgrade if first control-plane node"
       become: true
       become_user: root
       command: kubeadm upgrade apply v{{ k8s_version }} -y
-      when: inventory_hostname == "acerslab"
+      when: inventory_hostname == groups['k8s_control_plane'][0]
     # else:
     - name: "Apply kubeadm upgrade if not first control-plane node"
       become: true
       become_user: root
       command: kubeadm upgrade node
-      when: inventory_hostname != "acerslab"
+      when: inventory_hostname != groups['k8s_control_plane'][0]
 
     # upgrade kubelet & kubectl packages
     - name: "Upgrade kubelet and kubectl"
@@ -81,7 +81,7 @@
       become: true
       become_user: root
       command: apt-mark unhold containerd.io
-    - name: "Upgrade cri-o and cri-o-runc"
+    - name: "Upgrade containerd.io"
       become: true
       become_user: root
       apt: name={{ item }} state=latest update_cache=yes
