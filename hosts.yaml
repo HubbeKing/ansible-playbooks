@@ -59,8 +59,8 @@ all:
         rycon:
     k8s_control_plane:
       hosts:
-        archeron:
         pacifica:
+        archeron:
         raptor:
     k8s_workers:
       hosts:
