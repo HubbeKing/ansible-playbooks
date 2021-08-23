@@ -5,12 +5,6 @@
       prompt: "Upgrade packages on which host or group in inventory?"
       private: no
   tasks:
-    # drain node
-    - import_tasks: tasks/drain_node.yaml
-      vars:
-        host: "{{ inventory_hostname }}"
-      when: "'k8s_cluster' in group_names"
-
     - name: "Run full upgrade"
       become: true
       become_user: root
@@ -23,6 +17,14 @@
       become_user: root
       register: reboot_required_file
       stat: path=/var/run/reboot-required get_md5=no
+
+    # drain node if reboot is required
+    - import_tasks: tasks/drain_node.yaml
+      vars:
+        host: "{{ inventory_hostname }}"
+      when:
+        - "'k8s_cluster' in group_names"
+        - reboot_required_file.stat.exists
 
     - name: "Reboot host"
       become: true
