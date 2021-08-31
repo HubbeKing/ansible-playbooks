@@ -3,7 +3,6 @@
   vars_prompt:
     - name: "inventory_hosts"
       prompt: "Which hosts?"
-      private: no
   tasks:
     - import_tasks: tasks/drain_node.yaml
       vars:
@@ -22,12 +21,14 @@
       copy:
         src: ../kubelet.yaml
         dest: /var/lib/kubelet/config.yaml
+        mode: 0644
 
     - name: Check if reboot is required
       become: true
       become_user: root
       register: reboot_required_file
-      stat: path=/var/run/reboot-required get_md5=no
+      stat:
+        path: /var/run/reboot-required
 
     - name: "Reboot host"
       become: true
@@ -44,7 +45,11 @@
     - name: Restart kubelet
       become: true
       become_user: root
-      command: systemctl restart kubelet
+      systemd:
+        daemon_reload: true
+        enabled: true
+        name: kubelet
+        state: restarted
       when: not reboot_required_file.stat.exists
 
     - import_tasks: tasks/uncordon_node.yaml

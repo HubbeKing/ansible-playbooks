@@ -1,10 +1,9 @@
 - hosts: "{{ inventory_hosts }}"
   serial: 1
-  gather_facts: no
+  gather_facts: false
   vars_prompt:
     - name: "inventory_hosts"
       prompt: "Ready which host or group in inventory?"
-      private: no
   tasks:
     - name: "Wait for host to become reachable"
       wait_for_connection:

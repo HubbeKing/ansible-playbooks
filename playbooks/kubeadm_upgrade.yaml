@@ -4,10 +4,8 @@
   vars_prompt:
     - name: "inventory_hosts"
       prompt: "Upgrade kubernetes on which host or group in inventory?"
-      private: no
     - name: "k8s_version"
       prompt: "Upgrade cluster to which kubernetes version?"
-      private: no
   tasks:
     # drain
     - import_tasks: tasks/drain_node.yaml
@@ -27,7 +25,7 @@
       apt:
         name: kubeadm={{ k8s_version }}-00
         state: present
-        update_cache: yes
+        update_cache: true
 
     - name: "Hold kubeadm package"
       become: true
@@ -84,7 +82,10 @@
     - name: "Upgrade containerd.io"
       become: true
       become_user: root
-      apt: name={{ item }} state=latest update_cache=yes
+      apt:
+        name: "{{ item }}"
+        state: latest
+        update_cache: true
       with_items:
         - containerd.io
     - name: "Hold containerd.io"
@@ -93,14 +94,17 @@
       command: apt-mark hold containerd.io
 
     # restart kubelet & containerd.io
-    - name: "Reload systemctl"
-      become: true
-      become_user: root
-      command: systemctl daemon-reload
     - name: "Restart containerd and kubelet"
       become: true
       become_user: root
-      command: systemctl restart containerd kubelet
+      systemd:
+        daemon_reload: true
+        enabled: true
+        name: "{{ item }}"
+        state: restarted
+      with_items:
+        - containerd
+        - kubelet
 
     # uncordon node
     - import_tasks: tasks/uncordon_node.yaml

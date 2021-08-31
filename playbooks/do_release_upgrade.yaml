@@ -3,7 +3,6 @@
   vars_prompt:
     - name: "inventory_hosts"
       prompt: "Run do-release-upgrade on which host or group in inventory?"
-      private: no
   tasks:
     # drain node
     - import_tasks: tasks/drain_node.yaml
@@ -16,7 +15,7 @@
       become_user: root
       apt:
         upgrade: full
-        update_cache: "yes"
+        update_cache: true
 
     - name: "Run release upgrade"
       become: true

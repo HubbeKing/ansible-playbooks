@@ -4,39 +4,43 @@
   vars_prompt:
     - name: "inventory_hosts"
       prompt: "Deploy resolv.conf and .ssh/authorized keys to which host or group in inventory?"
-      private: no
   tasks:
     - name: Disable and stop systemd-resolved
-      become: yes
+      become: true
       become_user: root
-      command: systemctl disable --now systemd-resolved
+      systemd:
+        name: systemd-resolved
+        enabled: false
+        state: stopped
     - name: Check if /etc/resolv.conf is a symlink
-      become: yes
+      become: true
       become_user: root
       stat:
         path: /etc/resolv.conf
       register: resolvconf
     - name: Remove /etc/resolv.conf symlink
-      become: yes
+      become: true
       become_user: root
       file:
-        follow: no
-        path: path=/etc/resolv.conf
+        follow: false
+        path: /etc/resolv.conf
         state: absent
       when: resolvconf.stat.islnk is defined and resolvconf.stat.islnk
     - name: Deploy /etc/resolv.conf
-      become: yes
+      become: true
       become_user: root
       copy:
         content: |
           nameserver 192.168.1.100
           search lan
         dest: /etc/resolv.conf
+        mode: 0644
 
     - name: Ensure .ssh dir exists
       file:
         path: ~/.ssh
         state: directory
+        mode: 0755
     - name: Deploy authorized_keys
       copy:
         content: |
@@ -47,3 +51,4 @@
           ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIMk8XNvVsGyYZrwgRVuZZ2ecINm7UZZhtpMOQ+uuyp6z hubbe@archeron
           ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGbmKD3NCDNGwzMQnZP8x8oOYG0QmC0YrexRBrBbVAMR hubbe@raptor
         dest: ~/.ssh/authorized_keys
+        mode: 0600

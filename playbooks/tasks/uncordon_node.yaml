@@ -1,17 +1,13 @@
-- name: "Ensure node is reporting 'Ready' status"
-  shell: "kubectl get node {{ host }} -o json|jq .status.conditions| jq -c '.[] | select(.type | contains(\"Ready\"))'|jq .status"
-  register: node_status
+- name: "Wait for node to be ready"
+  command: "kubectl wait --for=condition=Ready --timeout=300s node {{ host }}"
   delegate_to: 127.0.0.1
-  until: node_status.stdout.find("True") != -1
-  retries: 30
-  delay: 10
 
 - name: "Uncordon node"
   command: kubectl uncordon {{ host }}
   delegate_to: 127.0.0.1
 
 - name: "Wait for longhorn to report 'Ready' status"
-  shell: "kubectl -n longhorn-system get nodes.longhorn.io {{ host }} -o json|jq .status.conditions.Ready.status"
+  shell: "set -o pipefail && kubectl -n longhorn-system get nodes.longhorn.io {{ host }} -o json|jq .status.conditions.Ready.status"
   register: longhorn_status
   delegate_to: 127.0.0.1
   until: longhorn_status.stdout.find("True") != -1
@@ -21,7 +17,9 @@
     - "'longhorn_storage_nodes' in group_names"
 
 - name: "Re-enable longhorn replica scheduling"
-  command: "kubectl -n longhorn-system patch nodes.longhorn.io {{ host }} --patch '{\"spec\": {\"allowScheduling\": true, \"evictionRequested\": false}}' --type=merge"
+  command: "kubectl -n longhorn-system patch nodes.longhorn.io {{ host }} --patch '{{ uncordon_patch }}' --type=merge"
   delegate_to: 127.0.0.1
+  vars:
+    uncordon_patch: "{{ lookup('file', '../k8s_patches/uncordon_patch.yaml') }}"
   when:
     - "'longhorn_storage_nodes' in group_names"

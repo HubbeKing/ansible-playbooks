@@ -3,7 +3,6 @@
   vars_prompt:
     - name: "inventory_hosts"
       prompt: "Drain which host or group in inventory?"
-      private: no
   tasks:
     - import_tasks: tasks/drain_node.yaml
       vars:
