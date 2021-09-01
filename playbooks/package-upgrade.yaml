@@ -25,11 +25,6 @@
         upgrade: full
         update_cache: true
 
-    - name: "Check if reboot is required"
-      register: reboot_required_file
-      stat:
-        path: /var/run/reboot-required
-
     - name: "Check if newer mainline kernel is available"
       command: ubuntu-mainline-kernel.sh -c
       register: kernel_update_exists
@@ -46,13 +41,18 @@
         - "{{ upgrade_kernel_to_mainline }} == y"
         - kernel_update_exists.rc == 1
 
+    - name: "Check if reboot is required"
+      register: reboot_required_file
+      stat:
+        path: /var/run/reboot-required
+
     # drain node
     - import_tasks: tasks/drain-node.yaml
       vars:
         host: "{{ inventory_hostname }}"
       when:
         - "'k8s_cluster' in group_names"
-        - (reboot_required_file.stat.exists) or (kernel_update_exists.rc == 1)
+        - reboot_required_file.stat.exists
 
     - name: "Reboot host"
       become: true
@@ -65,7 +65,7 @@
         post_reboot_delay: 60
         test_command: uptime
       when:
-        - (reboot_required_file.stat.exists) or (kernel_update_exists.rc == 1)
+        - reboot_required_file.stat.exists
 
     # uncordon node
     - import_tasks: tasks/uncordon-node.yaml
@@ -73,4 +73,4 @@
         host: "{{ inventory_hostname }}"
       when:
         - "'k8s_cluster' in group_names"
-        - (reboot_required_file.stat.exists) or (kernel_update_exists.rc == 1)
+        - reboot_required_file.stat.exists
