@@ -8,13 +8,9 @@
   vars_files:
     - vars/install_settings.yaml
   tasks:
-    - name: Get name of primary network interface on node
-      shell: set -o pipefail && ip addr show | awk '/inet.*brd/{print $NF; exit}'
-      register: network_name_cmd
-
     - name: Set facts for kube-vip template
       set_fact:
-        interface_name: "{{ network_name_cmd.stdout }}"
+        interface_name: "{{ ansible_default_ipv4.interface }}"
         virtual_ip: "{{ control_plane_vip }}"
 
     - name: Deploy kube-vip static pod manifest
