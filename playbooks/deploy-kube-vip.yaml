@@ -9,10 +9,11 @@
     - vars/install_settings.yaml
   tasks:
     - name: Get name of primary network interface on node
-      shell: ip addr show | awk '/inet.*brd/{print $NF; exit}'
+      shell: set -o pipefail && ip addr show | awk '/inet.*brd/{print $NF; exit}'
       register: network_name_cmd
 
-    - set_fact:
+    - name: Set facts for kube-vip template
+      set_fact:
         interface_name: "{{ network_name_cmd.stdout }}"
         virtual_ip: "{{ control_plane_vip }}"
 
