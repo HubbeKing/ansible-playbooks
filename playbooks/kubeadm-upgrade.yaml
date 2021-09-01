@@ -85,11 +85,9 @@
       become: true
       become_user: root
       apt:
-        name: "{{ item }}"
+        name: containerd.io
         state: latest
         update_cache: true
-      with_items:
-        - containerd.io
     - name: "Hold containerd.io"
       become: true
       become_user: root
