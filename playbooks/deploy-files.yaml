@@ -4,6 +4,7 @@
   vars_prompt:
     - name: "inventory_hosts"
       prompt: "Deploy resolv.conf and .ssh/authorized keys to which host or group in inventory?"
+      private: false
   tasks:
     - name: Disable and stop systemd-resolved
       become: true

@@ -2,7 +2,7 @@
   command: "kubectl -n longhorn-system patch nodes.longhorn.io {{ host }} --patch '{{ drain_patch }}' --type=merge"
   delegate_to: 127.0.0.1
   vars:
-    drain_patch: "{{ lookup('file', '../k8s_patches/drain_patch.yaml') }}"
+    drain_patch: "{{ lookup('file', '../files/k8s_drain_patch.yaml') }}"
   when:
     - "'longhorn_storage_nodes' in group_names"
 

@@ -4,6 +4,7 @@
   vars_prompt:
     - name: "inventory_hosts"
       prompt: "Ready which host or group in inventory?"
+      private: false
   tasks:
     - name: "Wait for host to become reachable"
       wait_for_connection:

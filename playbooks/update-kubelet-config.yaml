@@ -3,6 +3,7 @@
   vars_prompt:
     - name: "inventory_hosts"
       prompt: "Which hosts?"
+      private: false
   tasks:
     - import_tasks: tasks/drain_node.yaml
       vars:
@@ -19,7 +20,7 @@
       become: true
       become_user: root
       copy:
-        src: ../kubelet.yaml
+        src: files/kubelet.yaml
         dest: /var/lib/kubelet/config.yaml
         mode: 0644
 

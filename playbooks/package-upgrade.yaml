@@ -3,9 +3,11 @@
   vars_prompt:
     - name: "inventory_hosts"
       prompt: "Upgrade packages on which host or group in inventory?"
+      private: false
     - name: "upgrade_kernel_to_mainline"
       prompt: "Upgrade kernel to mainline using ubuntu-mainline-kernel.sh? (y/N)"
       default: "N"
+      private: false
   tasks:
     - name: "Update ubuntu-mainline-kernel script"
       become: true

@@ -11,7 +11,7 @@
         mode: 0644
     - name: "Deploy blocky config"
       copy:
-        src: ../blocky/config.yml
+        src: files/blocky/config.yml
         dest: /etc/blocky/config.yml
         mode: 0644
 
@@ -39,19 +39,19 @@
         mode: 0644
     - name: Deploy keepalived.conf if primary DNS
       copy:
-        src: ../blocky/keepalived_primary.conf
+        src: files/blocky/keepalived_primary.conf
         dest: /etc/keepalived/keepalived.conf
         mode: 0644
       when: inventory_hostname == groups['blocky'][0]
     - name: Deploy keepalived.conf if secondary DNS
       copy:
-        src: ../blocky/keepalived_secondary.conf
+        src: files/blocky/keepalived_secondary.conf
         dest: /etc/keepalived/keepalived.conf
         mode: 0644
       when: inventory_hostname != groups['blocky'][0]
     - name: Deploy DNS check script
       copy:
-        src: ../blocky/check_dns.sh
+        src: files/blocky/check_dns.sh
         dest: /etc/keepalived/check_dns.sh
         mode: 0755
 

@@ -20,6 +20,6 @@
   command: "kubectl -n longhorn-system patch nodes.longhorn.io {{ host }} --patch '{{ uncordon_patch }}' --type=merge"
   delegate_to: 127.0.0.1
   vars:
-    uncordon_patch: "{{ lookup('file', '../k8s_patches/uncordon_patch.yaml') }}"
+    uncordon_patch: "{{ lookup('file', '../files/k8s_uncordon_patch.yaml') }}"
   when:
     - "'longhorn_storage_nodes' in group_names"

@@ -1,0 +1,18 @@
+- hosts: "k8s_cluster"
+  # limit to handle only one host at a time
+  serial: 1
+  vars_files:
+    - vars/install_settings.yaml
+  tasks:
+    # check if control plane is up on first node
+      # if not, install prereqs of first node
+      # then run kubeadm init on that node
+      # then wait until that node is Ready before continuing on
+    # check if all desired control plane nodes are in cluster
+      # if we find one that isn't, install prereqs on it and join as control-plane
+      # then wait until that node is Ready before checking again
+    # check if all desired workers are in cluster
+      # if we find one that isn't, install prereqs on it and join as worker
+      # then wait until that node is Ready before checking again
+    # check if installed version matches desired version from install_settings.yaml
+      # if not, import upgrade.yaml playbook

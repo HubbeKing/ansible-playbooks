@@ -1,0 +1,6 @@
+kubernetes_version: "1.22.0"
+pod_network_cidr: 10.244.0.0/16
+kubernetes_service_cidr: 10.96.0.0/12
+control_plane_ha: true
+control_plane_vip: "192.168.1.120"
+control_plane_port: "6443"

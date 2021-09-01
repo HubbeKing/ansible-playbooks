@@ -1,0 +1,25 @@
+- hosts: "{{ inventory_hosts }}"
+  # limit to handle only one host at a time
+  serial: 1
+  vars_prompt:
+    - name: "inventory_hosts"
+      prompt: "Deploy kube-vip static pod to which host(s)?"
+      private: false
+  vars_files:
+    - vars/install_settings.yaml
+  tasks:
+    - name: Get name of primary network interface on node
+      shell: ip addr show | awk '/inet.*brd/{print $NF; exit}'
+      register: network_name_cmd
+
+    - set_fact:
+        interface_name: "{{ network_name_cmd.stdout }}"
+        virtual_ip: "{{ control_plane_vip }}"
+
+    - name: Deploy kube-vip static pod manifest
+      become: true
+      become_user: root
+      template:
+        src: templates/kube-vip.j2
+        dest: /etc/kubernetes/manifests/kube-vip.yaml
+        mode: 0644

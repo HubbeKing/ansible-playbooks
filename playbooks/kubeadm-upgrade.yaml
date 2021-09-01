@@ -4,8 +4,10 @@
   vars_prompt:
     - name: "inventory_hosts"
       prompt: "Upgrade kubernetes on which host or group in inventory?"
+      private: false
     - name: "k8s_version"
       prompt: "Upgrade cluster to which kubernetes version?"
+      private: false
   tasks:
     # drain
     - import_tasks: tasks/drain_node.yaml
