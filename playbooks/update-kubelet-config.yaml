@@ -5,7 +5,7 @@
       prompt: "Which hosts?"
       private: false
   tasks:
-    - import_tasks: tasks/drain_node.yaml
+    - import_tasks: tasks/drain-node.yaml
       vars:
         host: "{{ inventory_hostname }}"
 
@@ -53,6 +53,6 @@
         state: restarted
       when: not reboot_required_file.stat.exists
 
-    - import_tasks: tasks/uncordon_node.yaml
+    - import_tasks: tasks/uncordon-node.yaml
       vars:
         host: "{{ inventory_hostname }}"

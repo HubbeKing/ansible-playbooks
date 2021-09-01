@@ -47,7 +47,7 @@
         - kernel_update_exists.rc == 1
 
     # drain node
-    - import_tasks: tasks/drain_node.yaml
+    - import_tasks: tasks/drain-node.yaml
       vars:
         host: "{{ inventory_hostname }}"
       when:
@@ -68,7 +68,7 @@
         - (reboot_required_file.stat.exists) or (kernel_update_exists.rc == 1)
 
     # uncordon node
-    - import_tasks: tasks/uncordon_node.yaml
+    - import_tasks: tasks/uncordon-node.yaml
       vars:
         host: "{{ inventory_hostname }}"
       when:

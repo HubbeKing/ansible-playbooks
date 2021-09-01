@@ -13,7 +13,7 @@
     - name: "Gather facts"
       setup:
 
-    - import_tasks: tasks/uncordon_node.yaml
+    - import_tasks: tasks/uncordon-node.yaml
       vars:
         host: "{{ inventory_hostname }}"
       when: "'k8s_cluster' in group_names"

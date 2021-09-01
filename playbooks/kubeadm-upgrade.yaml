@@ -10,7 +10,7 @@
       private: false
   tasks:
     # drain
-    - import_tasks: tasks/drain_node.yaml
+    - import_tasks: tasks/drain-node.yaml
       vars:
         host: "{{ inventory_hostname }}"
 
@@ -109,6 +109,6 @@
         - kubelet
 
     # uncordon node
-    - import_tasks: tasks/uncordon_node.yaml
+    - import_tasks: tasks/uncordon-node.yaml
       vars:
         host: "{{ inventory_hostname }}"

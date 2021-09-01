@@ -6,7 +6,7 @@
       private: false
   tasks:
     # drain node
-    - import_tasks: tasks/drain_node.yaml
+    - import_tasks: tasks/drain-node.yaml
       vars:
         host: "{{ inventory_hostname }}"
       when: "'k8s_cluster' in group_names"
@@ -35,7 +35,7 @@
         test_command: uptime
 
     # uncordon node
-    - import_tasks: tasks/uncordon_node.yaml
+    - import_tasks: tasks/uncordon-node.yaml
       vars:
         host: "{{ inventory_hostname }}"
       when: "'k8s_cluster' in group_names"
