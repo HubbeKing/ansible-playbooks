@@ -1,13 +1,19 @@
 - name: "Wait for node to be ready"
   command: "kubectl wait --for=condition=Ready --timeout=300s node {{ host }}"
   delegate_to: 127.0.0.1
+  when:
+    - "'k8s_cluster' in group_names"
 
 - name: "Uncordon node"
   command: kubectl uncordon {{ host }}
   delegate_to: 127.0.0.1
+  when:
+    - "'k8s_cluster' in group_names"
 
 - name: "Wait for longhorn to report 'Ready' status"
-  shell: "set -o pipefail && kubectl -n longhorn-system get nodes.longhorn.io {{ host }} -o json|jq .status.conditions.Ready.status"
+  shell: |
+    set -o pipefail && \
+    kubectl -n longhorn-system get nodes.longhorn.io {{ host }} -o json|jq .status.conditions.Ready.status
   register: longhorn_status
   delegate_to: 127.0.0.1
   until: longhorn_status.stdout.find("True") != -1

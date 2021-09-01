@@ -14,12 +14,6 @@
       vars:
         host: "{{ inventory_hostname }}"
 
-    # unhold k8s packages
-    - name: "Unhold k8s packages"
-      become: true
-      become_user: root
-      command: apt-mark unhold kubeadm kubectl kubelet
-
     # upgrade kubeadm package
     - name: "Upgrade kubeadm package"
       become: true
@@ -28,6 +22,7 @@
         name: kubeadm={{ k8s_version }}-00
         state: present
         update_cache: true
+        allow_change_held_packages: true
 
     - name: "Hold kubeadm package"
       become: true
@@ -59,7 +54,7 @@
     - name: "Upgrade kubelet and kubectl"
       become: true
       become_user: root
-      apt: name={{ item }} state=present update_cache=yes
+      apt: name={{ item }} state=present update_cache=true allow_change_held_packages=true
       with_items:
         - kubelet={{ k8s_version }}-00
         - kubectl={{ k8s_version }}-00
@@ -77,10 +72,6 @@
         selection: hold
 
     # upgrade containerd.io
-    - name: "Unhold containerd.io"
-      become: true
-      become_user: root
-      command: apt-mark unhold containerd.io
     - name: "Upgrade containerd.io"
       become: true
       become_user: root
@@ -88,10 +79,13 @@
         name: containerd.io
         state: latest
         update_cache: true
-    - name: "Hold containerd.io"
+        allow_change_held_packages: true
+    - name: "Hold containerd package"
       become: true
       become_user: root
-      command: apt-mark hold containerd.io
+      dpkg_selections:
+        name: containerd.io
+        selection: hold
 
     # restart kubelet & containerd.io
     - name: "Restart containerd and kubelet"
