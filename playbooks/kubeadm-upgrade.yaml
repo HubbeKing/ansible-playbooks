@@ -9,98 +9,111 @@
       prompt: "Upgrade cluster to which kubernetes version?"
       private: false
   tasks:
-    # drain
-    - import_tasks: tasks/drain-node.yaml
-      vars:
-        host: "{{ inventory_hostname }}"
+    - name: Get installed version for node
+      command: kubectl get node -o custom-columns=VERSION:.status.nodeInfo.kubeletVersion --no-headers {{ inventory_hostname }}
+      register: node_version_cmd
+      delegate_to: 127.0.0.1
+      when: "'k8s_cluster' in group_names"
 
-    # upgrade kubeadm package
-    - name: "Upgrade kubeadm package"
-      become: true
-      become_user: root
-      apt:
-        name: kubeadm={{ k8s_version }}-00
-        state: present
-        update_cache: true
-        allow_change_held_packages: true
+    - name: Run upgrade
+      when: node_version_cmd.stdout.find(k8s_version) == -1
+      block:
+        # drain
+        - import_tasks: tasks/drain-node.yaml
+          vars:
+            host: "{{ inventory_hostname }}"
 
-    - name: "Hold kubeadm package"
-      become: true
-      become_user: root
-      dpkg_selections:
-        name: kubeadm
-        selection: hold
+        # upgrade kubeadm package
+        - name: "Upgrade kubeadm package"
+          become: true
+          become_user: root
+          apt:
+            name: kubeadm={{ k8s_version }}-00
+            state: present
+            update_cache: true
+            force: true  # TODO change to allow_change_held_packages once ansible supports it
 
-    # kubeadm upgrade step
-    # if first control-plane:
-    - name: "Plan kubeadm upgrade"
-      become: true
-      become_user: root
-      command: kubeadm upgrade plan
-      when: inventory_hostname == groups['k8s_control_plane'][0]
-    - name: "Apply kubeadm upgrade if first control-plane node"
-      become: true
-      become_user: root
-      command: kubeadm upgrade apply v{{ k8s_version }} -y
-      when: inventory_hostname == groups['k8s_control_plane'][0]
-    # else:
-    - name: "Apply kubeadm upgrade if not first control-plane node"
-      become: true
-      become_user: root
-      command: kubeadm upgrade node
-      when: inventory_hostname != groups['k8s_control_plane'][0]
+        - name: "Hold kubeadm package"
+          become: true
+          become_user: root
+          dpkg_selections:
+            name: kubeadm
+            selection: hold
 
-    # upgrade kubelet & kubectl packages
-    - name: "Upgrade kubelet and kubectl"
-      become: true
-      become_user: root
-      apt: name={{ item }} state=present update_cache=true allow_change_held_packages=true
-      with_items:
-        - kubelet={{ k8s_version }}-00
-        - kubectl={{ k8s_version }}-00
-    - name: "Hold kubelet package"
-      become: true
-      become_user: root
-      dpkg_selections:
-        name: kubelet
-        selection: hold
-    - name: "Hold kubectl package"
-      become: true
-      become_user: root
-      dpkg_selections:
-        name: kubectl
-        selection: hold
+        # kubeadm upgrade step
+        # if first control-plane:
+        - name: "Plan kubeadm upgrade"
+          become: true
+          become_user: root
+          command: kubeadm upgrade plan
+          when: inventory_hostname == groups['k8s_control_plane'][0]
+        - name: "Apply kubeadm upgrade if first control-plane node"
+          become: true
+          become_user: root
+          command: kubeadm upgrade apply v{{ k8s_version }} -y
+          when: inventory_hostname == groups['k8s_control_plane'][0]
+        # else:
+        - name: "Apply kubeadm upgrade if not first control-plane node"
+          become: true
+          become_user: root
+          command: kubeadm upgrade node
+          when: inventory_hostname != groups['k8s_control_plane'][0]
 
-    # upgrade containerd.io
-    - name: "Upgrade containerd.io"
-      become: true
-      become_user: root
-      apt:
-        name: containerd.io
-        state: latest
-        update_cache: true
-        allow_change_held_packages: true
-    - name: "Hold containerd package"
-      become: true
-      become_user: root
-      dpkg_selections:
-        name: containerd.io
-        selection: hold
+        # upgrade kubelet & kubectl packages
+        - name: "Upgrade kubelet and kubectl"
+          become: true
+          become_user: root
+          apt:
+            name: "{{ item }}"
+            state: present
+            update_cache: true
+            force: true  # TODO change to allow_change_held_packages once ansible supports it
+          with_items:
+            - kubelet={{ k8s_version }}-00
+            - kubectl={{ k8s_version }}-00
+        - name: "Hold kubelet package"
+          become: true
+          become_user: root
+          dpkg_selections:
+            name: kubelet
+            selection: hold
+        - name: "Hold kubectl package"
+          become: true
+          become_user: root
+          dpkg_selections:
+            name: kubectl
+            selection: hold
 
-    # restart kubelet & containerd.io
-    - name: "Restart containerd and kubelet"
-      become: true
-      become_user: root
-      systemd:
-        daemon_reload: true
-        enabled: true
-        name: "{{ item }}"
-        state: restarted
-      with_items:
-        - containerd
-        - kubelet
+        # upgrade containerd.io
+        - name: "Upgrade containerd.io"
+          become: true
+          become_user: root
+          apt:
+            name: containerd.io
+            state: latest
+            update_cache: true
+            force: true  # TODO change to allow_change_held_packages once ansible supports it
+        - name: "Hold containerd package"
+          become: true
+          become_user: root
+          dpkg_selections:
+            name: containerd.io
+            selection: hold
 
-    # uncordon node
-    - import_tasks: tasks/uncordon-node.yaml
-      vars:
-        host: "{{ inventory_hostname }}"
+        # restart kubelet & containerd.io
+        - name: "Restart containerd and kubelet"
+          become: true
+          become_user: root
+          systemd:
+            daemon_reload: true
+            enabled: true
+            name: "{{ item }}"
+            state: restarted
+          with_items:
+            - containerd
+            - kubelet
+
+        # uncordon node
+        - import_tasks: tasks/uncordon-node.yaml
+          vars:
+            host: "{{ inventory_hostname }}"

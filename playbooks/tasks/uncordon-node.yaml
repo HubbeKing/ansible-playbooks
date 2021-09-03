@@ -1,7 +1,16 @@
+- name: "Check if longhorn is deployed at all"
+  command: kubectl get ns longhorn-system
+  register: longhorn_deployed_cmd
+  delegate_to: 127.0.0.1
+  failed_when: "longhorn_deployed_cmd.rc not in [ 0, 1 ]"
+  when:
+    - "'k8s_cluster' in group_names"
+
 - name: "Wait for node to be ready"
   command: "kubectl wait --for=condition=Ready --timeout=300s node {{ host }}"
   delegate_to: 127.0.0.1
   when:
+    - longhorn_deployed_cmd.rc != 1
     - "'k8s_cluster' in group_names"
 
 - name: "Uncordon node"
@@ -20,6 +29,7 @@
   retries: 30
   delay: 10
   when:
+    - longhorn_deployed_cmd.rc != 1
     - "'longhorn_storage_nodes' in group_names"
 
 - name: "Re-enable longhorn replica scheduling"
@@ -28,4 +38,5 @@
   vars:
     uncordon_patch: "{{ lookup('file', '../files/k8s_uncordon_patch.yaml') }}"
   when:
+    - longhorn_deployed_cmd.rc != 1
     - "'longhorn_storage_nodes' in group_names"
