@@ -20,7 +20,6 @@ cpuManagerReconcilePeriod: 10s
 evictionPressureTransitionPeriod: 5m0s
 featureGates:
   GracefulNodeShutdown: true
-  MixedProtocolLBService: true
 fileCheckFrequency: 20s
 healthzBindAddress: 127.0.0.1
 healthzPort: 10248
