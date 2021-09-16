@@ -42,8 +42,11 @@
         - control_plane_up_cmd.rc != 0
         - kubeadm_init | string == "y"
 
-    - name: Install kube-router CNI plugin
-      include_tasks: tasks/install-kube-router.yaml
+    - name: Install Project Calico CNI plugin
+      command: "kubectl apply -f https://docs.projectcalico.org/manifests/calico.yaml"
+      delegate_to: 127.0.0.1
+      environment:
+        KUBECONFIG: /tmp/kubeconfig
       when:
         - inventory_hostname == groups['k8s_control_plane'][0]
         - control_plane_up_cmd.rc != 0
