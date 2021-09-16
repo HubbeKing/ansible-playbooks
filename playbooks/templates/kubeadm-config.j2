@@ -55,7 +55,9 @@ apiServer:
   timeoutForControlPlane: 4m0s
 certificatesDir: /etc/kubernetes/pki
 clusterName: kubernetes
+{% if control_plane_vip is defined and control_plane_vip %}
 controlPlaneEndpoint: {{ control_plane_vip }}:{{ control_plane_port }}
+{% endif %}
 controllerManager:
   extraArgs:
     bind-address: 0.0.0.0

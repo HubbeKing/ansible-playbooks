@@ -4,15 +4,126 @@
   vars_files:
     - vars/install_settings.yaml
   tasks:
-    # check if control plane is up on first node
-      # if not, install prereqs of first node
-      # then run kubeadm init on that node
-      # then wait until that node is Ready before continuing on
-    # check if all desired control plane nodes are in cluster
-      # if we find one that isn't, install prereqs on it and join as control-plane
-      # then wait until that node is Ready before checking again
-    # check if all desired workers are in cluster
-      # if we find one that isn't, install prereqs on it and join as worker
-      # then wait until that node is Ready before checking again
-    # check if installed version matches desired version from install_settings.yaml
-      # if not, import upgrade.yaml playbook
+    - name: Check if control plane is up on first node
+      become: true
+      become_user: root
+      command: "kubectl get node {{ inventory_hostname }}"
+      register: control_plane_up_cmd
+      failed_when: control_plane_up_cmd.rc not in [ 0, 1 ]
+      when: inventory_hostname == groups['k8s_control_plane'][0]
+
+    - name: Ask for confirmation before kubeadm init
+      pause:
+        prompt: "Cluster appears to not exist. Should a new cluster be initialized? (y/N)"
+        default: "N"
+        register: kubeadm_init
+      when:
+        - inventory_hostname == groups['k8s_control_plane'][0]
+        - control_plane_up_cmd.rc != 0
+
+    - name: Prep first node for cluster init
+      include_tasks: tasks/install-kubeadm-prereqs.yaml
+      when:
+        - inventory_hostname == groups['k8s_control_plane'][0]
+        - control_plane_up_cmd.rc != 0
+        - kubeadm_init | string == "y"
+
+    - name: Deploy kube-vip static pod manifest
+      include_tasks: tasks/deploy-kube-vip.yaml
+      when:
+        - inventory_hostname == groups['k8s_control_plane'][0]
+        - control_plane_up_cmd.rc != 0
+        - kubeadm_init | string == "y"
+
+    - name: Initialize cluster
+      include_tasks: tasks/kubeadm-init.yaml
+      when:
+        - inventory_hostname == groups['k8s_control_plane'][0]
+        - control_plane_up_cmd.rc != 0
+        - kubeadm_init | string == "y"
+
+    - name: Install kube-router CNI plugin
+      include_tasks: tasks/install-kube-router.yaml
+      when:
+        - inventory_hostname == groups['k8s_control_plane'][0]
+        - control_plane_up_cmd.rc != 0
+        - kubeadm_init | string == "y"
+
+    - name: Get kubeconfig file from first control plane node
+      fetch:
+        dest: /tmp/kubeconfig
+        src: /etc/kubernetes/admin.conf
+      when:
+        - inventory_hostname == groups['k8s_control_plane'][0]
+
+    - name: Wait for control-plane to be ready after init
+      command: "kubectl wait --namespace=kube-system --for=condition=Ready pods --selector tier=control-plane --timeout=300s"
+      delegate_to: 127.0.0.1
+      environment:
+        KUBECONFIG: /tmp/kubeconfig
+      when:
+        - inventory_hostname == groups['k8s_control_plane'][0]
+        - control_plane_up_cmd.rc != 0
+        - kubeadm_init | string == "y"
+
+    - name: Ensure node is in cluster
+      when:
+        - control_plane_up_cmd.rc == 0
+      block:
+        - name: Ensure control-plane is healthy
+          command: "kubectl wait --namespace=kube-system --for=condition=Ready pods --selector tier=control-plane --timeout=300s"
+          delegate_to: 127.0.0.1
+          environment:
+            KUBECONFIG: /tmp/kubeconfig
+          when: "'k8s_cluster' in group_names"
+
+        - name: Check if this node is in cluster
+          command: "kubectl get node {{ inventory_hostname }}"
+          delegate_to: 127.0.0.1
+          environment:
+            KUBECONFIG: /tmp/kubeconfig
+          failed_when: "cluster_membership_cmd.rc not in [ 0, 1 ]"
+          register: cluster_membership_cmd
+          when:
+            - control_plane_up_cmd.rc == 0
+            - control_plane_up_cmd.stdout.find("NotReady") == -1
+
+        - name: Prep node for join
+          include_tasks: tasks/install-kubeadm-prereqs.yaml
+          when:
+            - cluster_membership_cmd.rc != 0
+
+        - name: Join node to cluster control-plane
+          include_tasks: tasks/kubeadm-join-controlplane.yaml
+          when:
+            - "'k8s_control_plane' in group_names"
+            - cluster_membership_cmd.rc != 0
+            - cluster_membership_cmd.stdout.find("control-plane") == -1
+
+        - name: Deploy kube-vip static pod template
+          include_tasks: tasks/deploy-kube-vip.yaml
+          when:
+            - "'k8s_control_plane' in group_names"
+            - cluster_membership_cmd.rc != 0
+            - cluster_membership_cmd.stdout.find("control-plane") == -1
+
+        - name: Join node to cluster as worker
+          include_tasks: tasks/kubeadm-join-worker.yaml
+          when:
+            - "'k8s_worker' in group_names"
+            - cluster_membership_cmd.rc != 0
+            - cluster_membership_cmd.stdout.find("worker") == -1
+
+        - name: Wait for node to be joined and ready
+          command: "kubectl wait --for=condition=Ready node {{ inventory_hostname }} --timeout=300s"
+          delegate_to: 127.0.0.1
+          environment:
+            KUBECONFIG: /tmp/kubeconfig
+          when:
+            - cluster_membership_cmd.rc != 0
+
+- name: Ensure cluster k8s version matches desired version
+  import_playbook: kubeadm-upgrade.yaml
+  vars:
+    inventory_hosts: "k8s_cluster"
+    k8s_version: "{{ kubernetes_version }}"

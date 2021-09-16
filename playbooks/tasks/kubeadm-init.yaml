@@ -1,0 +1,27 @@
+- name: Ensure kubelet is running and enabled
+  become: true
+  become_user: root
+  systemd:
+    name: kubelet
+    enabled: true
+    state: started
+
+- name: Copy kubeadm config to node
+  become: true
+  become_user: root
+  template:
+    dest: /tmp/kubeadm_config.yaml
+    src: templates/kubeadm-config.j2
+    mode: 0644
+
+- name: Run kubeadm init
+  become: true
+  become_user: root
+  command: kubeadm init --config /tmp/kubeadm_config.yaml
+  when: control_plane_ha is false
+
+- name: Run kubeadm init
+  become: true
+  become_user: root
+  command: kubeadm init --upload-certs --config /tmp/kubeadm_config.yaml
+  when: control_plane_ha is true

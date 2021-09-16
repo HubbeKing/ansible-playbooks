@@ -1,0 +1,219 @@
+- name: Load overlay module
+  become: true
+  become_user: root
+  modprobe:
+    name: overlay
+    state: present
+
+- name: Load br_netfilter module
+  become: true
+  become_user: root
+  modprobe:
+    name: br_netfilter
+    state: present
+
+- name: Set up module-load file for k8s modules
+  become: true
+  become_user: root
+  copy:
+    content: |
+      br_netfilter
+      overlay
+    dest: /etc/modules-load.d/k8s.conf
+    mode: 0644
+
+- name: Set ip forwarding on
+  become: true
+  become_user: root
+  ansible.posix.sysctl:
+    name: net.ipv4.ip_forward
+    value: '1'
+    sysctl_file: /etc/sysctl.d/k8s.conf
+    state: present
+    reload: true
+
+- name: Set nf-call-iptables on
+  become: true
+  become_user: root
+  ansible.posix.sysctl:
+    name: net.bridge.bridge-nf-call-iptables
+    value: '1'
+    sysctl_file: /etc/sysctl.d/k8s.conf
+    state: present
+    reload: true
+
+- name: Set nf-call-ip6tables on
+  become: true
+  become_user: root
+  ansible.posix.sysctl:
+    name: net.bridge.bridge-nf-call-ip6tables
+    value: '1'
+    sysctl_file: /etc/sysctl.d/k8s.conf
+    state: present
+    reload: true
+
+- name: Install required packages for official docker repo
+  become: true
+  become_user: root
+  apt:
+    name:
+      - apt-transport-https
+      - ca-certificates
+      - curl
+      - gnupg
+    state: present
+
+- name: Fetch docker repo signing key
+  become: true
+  become_user: root
+  apt_key:
+    url: https://download.docker.com/linux/ubuntu/gpg
+    keyring: /usr/share/keyrings/docker-archive-keyring.gpg
+
+- name: Add docker repo to apt sources
+  become: true
+  become_user: root
+  template:
+    src: templates/docker-sources.j2
+    dest: /etc/apt/sources.list.d/docker.list
+    mode: 0644
+
+- name: Install containerd
+  become: true
+  become_user: root
+  apt:
+    name: containerd.io
+    state: present
+    update_cache: true
+    force: true  # TODO change to allow_change_held_packages once ansible supports it
+
+- name: Hold containerd package
+  become: true
+  become_user: root
+  dpkg_selections:
+    name: containerd.io
+    selection: hold
+
+- name: Ensure containerd config dir exists
+  become: true
+  become_user: root
+  file:
+    path: /etc/containerd
+    state: directory
+    mode: 0644
+
+- name: Deploy containerd config
+  become: true
+  become_user: root
+  copy:
+    src: files/containerd.toml
+    dest: /etc/containerd/config.toml
+    mode: 0644
+
+- name: Restart containerd
+  become: true
+  become_user: root
+  systemd:
+    name: containerd
+    enabled: true
+    state: restarted
+
+- name: Install iSCSI initiator, ipvsadm, and nfs client
+  become: true
+  become_user: root
+  apt:
+    name:
+      - open-iscsi
+      - ipvsadm
+      - nfs-common
+    state: present
+    update_cache: true
+    install_recommends: false
+
+- name: Get kubernetes repo signing key
+  become: true
+  become_user: root
+  get_url:
+    url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
+    dest: /usr/share/keyrings/kubernetes-archive-keyring.gpg
+    mode: 0644
+
+- name: Add kubernetes repo to apt sources
+  become: true
+  become_user: root
+  copy:
+    content: deb [signed-by=/usr/share/keyrings/kubernetes-archive-keyring.gpg] https://apt.kubernetes.io/ kubernetes-xenial main
+    dest: /etc/apt/sources.list.d/kubernetes.list
+    mode: 0644
+
+- name: Get cri-tools repo signing key for ubuntu
+  become: true
+  become_user: root
+  apt_key:
+    url: "https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/xUbuntu_{{ ansible_distribution_version }}/Release.key"
+    keyring: /usr/share/keyrings/cri-tools.gpg
+  when: ansible_facts["ansible_distribution"]|lower == "ubuntu"
+
+- name: Get cri-tools repo signing key for debian
+  become: true
+  become_user: root
+  apt_key:
+    url: "https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/Debian_{{ ansible_distribution_version }}/Release.key"
+    keyring: /usr/share/keyrings/cri-tools.gpg
+  when: ansible_facts["ansible_distribution"]|lower == "debian"
+
+- name: Add cri-tools repo to apt sources
+  become: true
+  become_user: root
+  template:
+    src: templates/cri-tools-sources.j2
+    dest: /etc/apt/sources.list.d/cri-tools.list
+    mode: 0644
+
+- name: Install cri-tools
+  become: true
+  become_user: root
+  apt:
+    name: cri-tools
+    state: present
+    update_cache: true
+
+- name: Install kubernetes packages
+  become: true
+  become_user: root
+  apt:
+    name:
+      - kubelet={{ kubernetes_version }}-00
+      - kubeadm={{ kubernetes_version }}-00
+      - kubectl={{ kubernetes_version }}-00
+    force: true  # TODO change to allow_change_held_packages once ansible supports it
+    update_cache: true
+
+- name: Hold kubernetes packages
+  become: true
+  become_user: root
+  dpkg_selections:
+    name: "{{ item }}"
+    selection: hold
+  with_items:
+    - kubelet
+    - kubeadm
+    - kubectl
+
+- name: Enable kubelet service
+  become: true
+  become_user: root
+  systemd:
+    name: kubelet
+    enabled: true
+    state: started
+
+- name: Set global env var for crictl
+  become: true
+  become_user: root
+  lineinfile:
+    path: /etc/environment
+    line: CONTAINER_RUNTIME_ENDPOINT=unix:///run/containerd/containerd.sock
+    mode: 0644
+    state: present
+    insertafter: EOF
