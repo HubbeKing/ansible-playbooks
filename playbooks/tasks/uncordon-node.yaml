@@ -1,4 +1,4 @@
-- name: "Check if longhorn is deployed at all"
+- name: "Check if longhorn is deployed"
   command: kubectl get ns longhorn-system
   register: longhorn_deployed_cmd
   delegate_to: 127.0.0.1
@@ -28,15 +28,6 @@
   until: longhorn_status.stdout.find("True") != -1
   retries: 30
   delay: 10
-  when:
-    - longhorn_deployed_cmd.rc != 1
-    - "'longhorn_storage_nodes' in group_names"
-
-- name: "Re-enable longhorn replica scheduling"
-  command: "kubectl -n longhorn-system patch nodes.longhorn.io {{ host }} --patch '{{ uncordon_patch }}' --type=merge"
-  delegate_to: 127.0.0.1
-  vars:
-    uncordon_patch: "{{ lookup('file', '../files/k8s_uncordon_patch.yaml') }}"
   when:
     - longhorn_deployed_cmd.rc != 1
     - "'longhorn_storage_nodes' in group_names"
