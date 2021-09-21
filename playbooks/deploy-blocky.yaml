@@ -14,6 +14,16 @@
         src: files/blocky/config.yml
         dest: /etc/blocky/config.yml
         mode: 0644
+    - name: "Deploy blocky SSL cert"
+      copy:
+        src: files/blocky/cert.pem
+        dest: /etc/blocky/cert.pem
+        mode: 0644
+    - name: "Deploy blocky SSL key"
+      copy:
+        src: files/blocky/key.pem
+        dest: /etc/blocky/key.pem
+        mode: 0644
 
     # deploy blocky
     - name: "Ensure blocky container is deployed"
@@ -25,11 +35,13 @@
         restart_policy: unless-stopped
         state: started
         ports:
-          - "80:80"
           - "53:53/tcp"
           - "53:53/udp"
+          - "443:443"
         volumes:
           - /etc/blocky/config.yml:/app/config.yml
+          - /etc/blocky/cert.pem:/app/cert.pem
+          - /etc/blocky/key.pem:/app/key.pem
 
     # deploy keepalived config
     - name: "Ensure keepalived dir exists"

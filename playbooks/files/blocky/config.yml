@@ -47,7 +47,9 @@ customDNS:
     ixion.lan: 192.168.1.133
     atlantia.lan: 192.168.1.134
     rycon.lan: 192.168.1.135
-httpPort: 80
+httpsPort: 443
+httpsCertFile: /app/cert.pem
+httpsKeyFile: /app/key.pem
 port: 53
 prometheus:
   enable: true
