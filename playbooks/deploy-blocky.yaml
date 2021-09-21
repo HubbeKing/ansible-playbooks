@@ -19,7 +19,7 @@
     - name: "Ensure blocky container is deployed"
       community.docker.docker_container:
         name: blocky
-        image: ghcr.io/0xerr0r/blocky:v0.15
+        image: ghcr.io/0xerr0r/blocky:v0.16
         privileged: true
         restart: true
         restart_policy: unless-stopped
