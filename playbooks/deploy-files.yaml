@@ -3,7 +3,7 @@
   serial: 1
   vars_prompt:
     - name: "inventory_hosts"
-      prompt: "Deploy resolv.conf and .ssh/authorized keys to which host or group in inventory?"
+      prompt: "Deploy resolv.conf, .ssh/authorized keys, and .bashrc to which host or group in inventory?"
       private: false
   tasks:
     - name: Disable and stop systemd-resolved
@@ -53,3 +53,9 @@
           ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGbmKD3NCDNGwzMQnZP8x8oOYG0QmC0YrexRBrBbVAMR hubbe@raptor
         dest: ~/.ssh/authorized_keys
         mode: 0600
+    - name: Deploy bashrc
+      copy:
+        content: |
+          PS1='[\u@\h \W]\$ '
+        dest: ~/.bashrc
+        mode: 0644
