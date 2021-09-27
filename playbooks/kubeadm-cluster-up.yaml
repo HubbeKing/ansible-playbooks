@@ -4,19 +4,17 @@
   vars_files:
     - vars/install_settings.yaml
   tasks:
-    - name: Check if control plane is up on first node
-      become: true
-      become_user: root
-      command: "kubectl get node {{ inventory_hostname }}"
+    - name: Check if control plane is up
+      command: "kubectl get node --selector=node-role.kubernetes.io/control-plane|grep Ready"
+      delegate_to: 127.0.0.1
       register: control_plane_up_cmd
       failed_when: control_plane_up_cmd.rc not in [ 0, 1 ]
-      when: inventory_hostname == groups['k8s_control_plane'][0]
+      run_once: true
 
     - name: Ask for confirmation before kubeadm init
       pause:
-        prompt: "Cluster appears to not exist. Should a new cluster be initialized? (y/N)"
-        default: "N"
-        register: kubeadm_init
+        prompt: "Cluster appears to not exist. Should a new cluster be initialized? (y/n)"
+      register: kubeadm_init
       when:
         - inventory_hostname == groups['k8s_control_plane'][0]
         - control_plane_up_cmd.rc != 0
@@ -45,25 +43,14 @@
     - name: Install Project Calico CNI plugin
       command: "kubectl apply -f https://docs.projectcalico.org/manifests/calico.yaml"
       delegate_to: 127.0.0.1
-      environment:
-        KUBECONFIG: /tmp/kubeconfig
       when:
         - inventory_hostname == groups['k8s_control_plane'][0]
         - control_plane_up_cmd.rc != 0
         - kubeadm_init | string == "y"
 
-    - name: Get kubeconfig file from first control plane node
-      fetch:
-        dest: /tmp/kubeconfig
-        src: /etc/kubernetes/admin.conf
-      when:
-        - inventory_hostname == groups['k8s_control_plane'][0]
-
     - name: Wait for control-plane to be ready after init
       command: "kubectl wait --namespace=kube-system --for=condition=Ready pods --selector tier=control-plane --timeout=300s"
       delegate_to: 127.0.0.1
-      environment:
-        KUBECONFIG: /tmp/kubeconfig
       when:
         - inventory_hostname == groups['k8s_control_plane'][0]
         - control_plane_up_cmd.rc != 0
@@ -76,15 +63,11 @@
         - name: Ensure control-plane is healthy
           command: "kubectl wait --namespace=kube-system --for=condition=Ready pods --selector tier=control-plane --timeout=300s"
           delegate_to: 127.0.0.1
-          environment:
-            KUBECONFIG: /tmp/kubeconfig
           when: "'k8s_cluster' in group_names"
 
         - name: Check if this node is in cluster
           command: "kubectl get node {{ inventory_hostname }}"
           delegate_to: 127.0.0.1
-          environment:
-            KUBECONFIG: /tmp/kubeconfig
           failed_when: "cluster_membership_cmd.rc not in [ 0, 1 ]"
           register: cluster_membership_cmd
           when:
@@ -120,8 +103,6 @@
         - name: Wait for node to be joined and ready
           command: "kubectl wait --for=condition=Ready node {{ inventory_hostname }} --timeout=300s"
           delegate_to: 127.0.0.1
-          environment:
-            KUBECONFIG: /tmp/kubeconfig
           when:
             - cluster_membership_cmd.rc != 0
 

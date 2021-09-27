@@ -14,14 +14,10 @@
 
 - name: Wait for node readiness
   delegate_to: 127.0.0.1
-  environment:
-    KUBECONFIG: /tmp/kubeconfig
   command: kubectl wait --for=condition=Ready --timeout=300s node {{ inventory_hostname }}
   when: "'k8s_worker' in group_names"
 
 - name: Label node as worker
   delegate_to: 127.0.0.1
-  environment:
-    KUBECONFIG: /tmp/kubeconfig
   command: kubectl label node {{ inventory_hostname }} kubernetes.io/role=worker
   when: "'k8s_worker' in group_names"

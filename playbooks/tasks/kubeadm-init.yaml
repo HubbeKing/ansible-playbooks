@@ -25,3 +25,10 @@
   become_user: root
   command: kubeadm init --upload-certs --config /tmp/kubeadm_config.yaml
   when: control_plane_ha is true
+
+- name: Fetch kubeconfig
+  become: true
+  become_user: root
+  fetch:
+    dest: ~/.kube/config
+    src: /etc/kubernetes/admin.conf

@@ -29,7 +29,5 @@
 
 - name: Wait for node to be ready
   delegate_to: 127.0.0.1
-  environment:
-    KUBECONFIG: /tmp/kubeconfig
   command: kubectl wait --for=condition=Ready --timeout=300s node {{ inventory_hostname }}
   when: "'k8s_control_plane' in group_names"
