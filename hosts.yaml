@@ -2,9 +2,9 @@ all:
   hosts:
     raptor:
       ansible_host: 192.168.1.101
-    viper:
+    osiris:
       ansible_host: 192.168.1.102
-    rpi2:
+    solaria:
       ansible_host: 192.168.1.103
 
     galactica:
@@ -32,16 +32,15 @@ all:
     rpi:
       hosts:
         raptor:
-        viper:
-        rpi2:
+        osiris:
+        solaria:
     blocky:
       hosts:
-        viper:
-        rpi2:
+        osiris:
+        solaria:
     ubuntu_servers:
       hosts:
         raptor:
-        viper:
         galactica:
         pacifica:
         archeron:

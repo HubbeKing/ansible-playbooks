@@ -30,8 +30,8 @@ customDNS:
     blocky.lan: 192.168.1.100
 
     raptor.lan: 192.168.1.101
-    viper.lan: 192.168.1.102
-    rpi2.lan: 192.168.1.103
+    osiris.lan: 192.168.1.102
+    solaria.lan: 192.168.1.103
 
     ma3a.lan: 192.168.1.111
     ps4.lan: 192.168.1.112
