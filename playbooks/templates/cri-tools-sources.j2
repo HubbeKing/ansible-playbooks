@@ -1,5 +1,0 @@
-{% if ansible_facts["ansible_distribution"] == "debian" %}
-deb [signed-by=/usr/share/keyrings/cri-tools.gpg] https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/Debian_{{ ansible_distribution_version }}/ /
-{% else if ansible_facts["ansible_distribution"] == "ubuntu" %}
-deb [signed-by=/usr/share/keyrings/cri-tools.gpg] https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/xUbuntu_{{ ansible_distribution_version }}/ /
-{% endif %}

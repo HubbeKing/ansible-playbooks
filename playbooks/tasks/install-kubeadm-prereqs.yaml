@@ -146,38 +146,6 @@
     dest: /etc/apt/sources.list.d/kubernetes.list
     mode: 0644
 
-- name: Get cri-tools repo signing key for ubuntu
-  become: true
-  become_user: root
-  apt_key:
-    url: "https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/xUbuntu_{{ ansible_distribution_version }}/Release.key"
-    keyring: /usr/share/keyrings/cri-tools.gpg
-  when: ansible_facts["ansible_distribution"]|lower == "ubuntu"
-
-- name: Get cri-tools repo signing key for debian
-  become: true
-  become_user: root
-  apt_key:
-    url: "https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/Debian_{{ ansible_distribution_version }}/Release.key"
-    keyring: /usr/share/keyrings/cri-tools.gpg
-  when: ansible_facts["ansible_distribution"]|lower == "debian"
-
-- name: Add cri-tools repo to apt sources
-  become: true
-  become_user: root
-  template:
-    src: templates/cri-tools-sources.j2
-    dest: /etc/apt/sources.list.d/cri-tools.list
-    mode: 0644
-
-- name: Install cri-tools
-  become: true
-  become_user: root
-  apt:
-    name: cri-tools
-    state: present
-    update_cache: true
-
 - name: Install kubernetes packages
   become: true
   become_user: root
@@ -186,6 +154,7 @@
       - kubelet={{ kubernetes_version }}-00
       - kubeadm={{ kubernetes_version }}-00
       - kubectl={{ kubernetes_version }}-00
+      - cri-tools
     force: true  # TODO change to allow_change_held_packages once ansible supports it
     update_cache: true
 
