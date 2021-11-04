@@ -30,4 +30,4 @@
   delay: 10
   when:
     - longhorn_deployed_cmd.rc != 1
-    - "'longhorn_storage_nodes' in group_names"
+    - "'longhorn' in group_names"

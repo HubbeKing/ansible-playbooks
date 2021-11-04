@@ -5,16 +5,19 @@
       prompt: "Run do-release-upgrade on which host or group in inventory?"
       private: false
   tasks:
+    - name: Upgrade packages
+      become: true
+      become_user: root
+      apt:
+        upgrade: full
+        update_cache: true
 
-    - name: Ensure update-manager is up to date
+    - name: Ensure update-manager is installed
       become: true
       become_user: root
       apt:
         name: update-manager-core
-        upgrade: full
-        update_cache: true
-      when:
-        - "'ubuntu_servers' in group_names"
+        state: present
 
     - name: "Check if there is a new release"
       become: true
@@ -22,28 +25,23 @@
       command: do-release-upgrade -c
       register: upgrade_check_cmd
       when:
-        - "'ubuntu_servers' in group_names"
-
-    - name: "Run release upgrade"
-      become: true
-      become_user: root
-      command: do-release-upgrade -f DistUpgradeViewNonInteractive
-      when:
-        - "'ubuntu_servers' in group_names"
-        - upgrade_check_cmd.rc == 1
-
-    - name: "Check if reboot is required"
-      register: reboot_required_file
-      stat:
-        path: /var/run/reboot-required
+        - "'ubuntu' in group_names"
 
       # drain node
     - import_tasks: tasks/drain-node.yaml
       vars:
         host: "{{ inventory_hostname }}"
       when:
-        - reboot_required_file.stat.exists
+        - upgrade_check_cmd.rc == 1
         - "'k8s_cluster' in group_names"
+
+    - name: "Run release upgrade"
+      become: true
+      become_user: root
+      command: do-release-upgrade -f DistUpgradeViewNonInteractive
+      when:
+        - "'ubuntu' in group_names"
+        - upgrade_check_cmd.rc == 1
 
     - name: "Reboot host"
       become: true
@@ -56,7 +54,7 @@
         post_reboot_delay: 60
         test_command: uptime
       when:
-        - reboot_required_file.stat.exists
+        - upgrade_check_cmd.rc == 1
 
     # uncordon node
     - import_tasks: tasks/uncordon-node.yaml

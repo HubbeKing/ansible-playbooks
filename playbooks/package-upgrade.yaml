@@ -16,7 +16,7 @@
         dest: /usr/local/bin/ubuntu-mainline-kernel.sh
         url: https://raw.githubusercontent.com/pimlie/ubuntu-mainline-kernel.sh/master/ubuntu-mainline-kernel.sh
         mode: 0755
-      when: "'ubuntu_servers' in group_names"
+      when: "'ubuntu' in group_names"
 
     - name: "Run full upgrade"
       become: true
@@ -29,7 +29,7 @@
       command: ubuntu-mainline-kernel.sh -c
       register: kernel_update_exists
       when:
-        - "'ubuntu_servers' in group_names"
+        - "'ubuntu' in group_names"
         - upgrade_kernel_to_mainline == 'y'
 
     - name: "Install new mainline kernel"
@@ -37,7 +37,7 @@
       become_user: root
       command: ubuntu-mainline-kernel.sh -i --yes
       when:
-        - "'ubuntu_servers' in group_names"
+        - "'ubuntu' in group_names"
         - upgrade_kernel_to_mainline == 'y'
         - kernel_update_exists.rc == 1
 

@@ -48,9 +48,7 @@
           ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGCOz0rEqX5SdB6fE7CV73m15e1MFKcdM1YXsmhwqlbW hubbe@desktop
           ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFJ1zIkbSsy/2Tjb3HKn1qW9hPGYpVgbXvM1LXTsu3cz hubbe@laptop
           ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEx5g6m5V+1zW6wIyx3CTEovDT09hXxR+WfM4Ti0lHGQ hubbe@phone
-          ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAICzhOBSge/z/Gkz/OkTOubX3iO2QV4zUTtiuUKBgv4xs hubbe@pacifica
-          ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIMk8XNvVsGyYZrwgRVuZZ2ecINm7UZZhtpMOQ+uuyp6z hubbe@archeron
-          ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGbmKD3NCDNGwzMQnZP8x8oOYG0QmC0YrexRBrBbVAMR hubbe@raptor
+          ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAILyKL5EBMz2ut8JUD/S+1/mY1weeu3X+Pw9ckL4H0pcW hubbe@pacifica
         dest: ~/.ssh/authorized_keys
         mode: 0600
     - name: Deploy bashrc

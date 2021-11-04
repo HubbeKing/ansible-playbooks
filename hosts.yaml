@@ -1,46 +1,75 @@
 all:
   hosts:
-    raptor:
-      ansible_host: 192.168.1.101
     osiris:
-      ansible_host: 192.168.1.102
+      # RPi 3 B+
+      ansible_host: 192.168.1.101
     solaria:
-      ansible_host: 192.168.1.103
+      # RPi 3 B+
+      ansible_host: 192.168.1.102
 
     galactica:
-      # NAS
+      # NAS Custom
+      # Intel Celeron G4900
       ansible_host: 192.168.1.121
     pacifica:
-      # DeskMini
+      # ASRock DeskMini 310
+      # Intel Core i3-8100
       ansible_host: 192.168.1.122
-    archeron:
-      # acerslab
-      ansible_host: 192.168.1.123
-
     valkyrie:
-      ansible_host: 192.168.1.131
+      # Intel NUC D54250WYK
+      # Intel Core i5-4250U
+      ansible_host: 192.168.1.123
+    archeron:
+      # Acer Aspire A114
+      # Intel Pentium Silver N5000
+      ansible_host: 192.168.1.124
+
     pegasus:
-      ansible_host: 192.168.1.132
+      # HP EliteDesk 800 G1 DM
+      # Intel Core i5-4590T
+      ansible_host: 192.168.1.131
     ixion:
-      ansible_host: 192.168.1.133
+      # Dell Optiplex 7040M
+      # Intel Core i7-6700T
+      ansible_host: 192.168.1.132
     atlantia:
-      ansible_host: 192.168.1.134
+      # Lenovo Thinkcentre M700 Tiny
+      # Intel Core i5-6400T
+      ansible_host: 192.168.1.133
     rycon:
-      ansible_host: 192.168.1.135
+      # AMD Custom
+      # AMD Ryzen 5 1600
+      ansible_host: 192.168.1.134
+
+    raptor:
+      # RPi 4 2GB
+      ansible_host: 192.168.1.141
+    viper:
+      # RPi 4 2GB
+      ansible_host: 192.168.1.142
+    blackbird:
+      # RPi 4 2GB
+      ansible_host: 192.168.1.143
 
   children:
     rpi:
-      hosts:
-        raptor:
-        osiris:
-        solaria:
+      children:
+        blocky:
+        ceph:
     blocky:
       hosts:
         osiris:
         solaria:
-    ubuntu_servers:
+    ceph:
       hosts:
-        raptor:
+        #raptor:
+        #viper:
+        #blackbird:
+    ubuntu:
+      hosts:
+        #raptor:
+        #viper:
+        #blackbird:
         galactica:
         pacifica:
         archeron:
@@ -49,8 +78,9 @@ all:
         ixion:
         atlantia:
         rycon:
-    longhorn_storage_nodes:
+    longhorn:
       hosts:
+        pacifica:
         valkyrie:
         pegasus:
         ixion:
@@ -60,10 +90,9 @@ all:
       hosts:
         pacifica:
         archeron:
-        raptor:
+        valkyrie:
     k8s_workers:
       hosts:
-        valkyrie:
         pegasus:
         ixion:
         atlantia:

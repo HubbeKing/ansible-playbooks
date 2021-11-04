@@ -29,9 +29,11 @@ customDNS:
 
     blocky.lan: 192.168.1.100
 
-    raptor.lan: 192.168.1.101
-    osiris.lan: 192.168.1.102
-    solaria.lan: 192.168.1.103
+    osiris.lan: 192.168.1.101
+    solaria.lan: 192.168.1.102
+    wifi-switch.lan: 192.168.1.103
+    k8s-switch.lan: 192.168.1.104
+    ceph-switch.lan: 192.168.1.105
 
     ma3a.lan: 192.168.1.111
     ps4.lan: 192.168.1.112
@@ -40,13 +42,17 @@ customDNS:
 
     galactica.lan: 192.168.1.121
     pacifica.lan: 192.168.1.122
-    archeron.lan: 192.168.1.123
+    valkyrie.lan: 192.168.1.123
+    archeron.lan: 192.168.1.124
 
-    valkyrie.lan: 192.168.1.131
-    pegasus.lan: 192.168.1.132
-    ixion.lan: 192.168.1.133
-    atlantia.lan: 192.168.1.134
-    rycon.lan: 192.168.1.135
+    pegasus.lan: 192.168.1.131
+    ixion.lan: 192.168.1.132
+    atlantia.lan: 192.168.1.133
+    rycon.lan: 192.168.1.134
+
+    raptor.lan: 192.168.1.141
+    viper.lan: 196.168.1.142
+    blackbird.lan: 196.168.1.143
 httpsPort: 443
 httpsCertFile: /app/cert.pem
 httpsKeyFile: /app/key.pem
