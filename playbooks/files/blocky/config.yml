@@ -33,7 +33,6 @@ customDNS:
     solaria.lan: 192.168.1.102
     wifi-switch.lan: 192.168.1.103
     k8s-switch.lan: 192.168.1.104
-    ceph-switch.lan: 192.168.1.105
 
     ma3a.lan: 192.168.1.111
     ps4.lan: 192.168.1.112
