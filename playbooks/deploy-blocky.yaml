@@ -29,7 +29,7 @@
     - name: "Ensure blocky container is deployed"
       community.docker.docker_container:
         name: blocky
-        image: ghcr.io/0xerr0r/blocky:v0.16
+        image: ghcr.io/0xerr0r/blocky:v0.17
         privileged: true
         restart: true
         restart_policy: unless-stopped
@@ -80,3 +80,6 @@
         volumes:
           - /etc/keepalived/keepalived.conf:/usr/local/etc/keepalived/keepalived.conf
           - /etc/keepalived/check_dns.sh:/etc/keepalived/check_dns.sh
+    - name: Wait before updating next host to ensure availability
+      pause:
+        seconds: 15
