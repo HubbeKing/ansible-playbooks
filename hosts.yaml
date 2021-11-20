@@ -66,18 +66,10 @@ all:
         #viper:
         #blackbird:
     ubuntu:
-      hosts:
-        #raptor:
-        #viper:
-        #blackbird:
-        galactica:
-        pacifica:
-        archeron:
-        valkyrie:
-        pegasus:
-        ixion:
-        atlantia:
-        rycon:
+      children:
+        blocky:
+        ceph:
+        k8s_cluster:
     longhorn:
       hosts:
         pacifica:
