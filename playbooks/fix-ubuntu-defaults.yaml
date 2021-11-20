@@ -70,6 +70,19 @@
       file:
         path: "{{ item }}"
         mode: 0644
+    - name: Disable additional motd sections on RPi to improve login speed
+      become: true
+      become_user: root
+      with_items:
+        - /etc/update-motd.d/50-landscape-sysinfo
+        - /etc/update-motd.d/88-esm-announce
+        - /etc/update-motd.d/95-hwe-eol
+      file:
+        path: "{{ item }}"
+        mode: 0644
+      when:
+        - "'rpi' in group_names"
+
     - name: Disable useless motd news timer
       become: true
       become_user: root
@@ -77,3 +90,20 @@
         name: motd-news.timer
         enabled: false
         state: stopped
+    - name: Deploy sshd config
+      become: true
+      become_user: root
+      copy:
+        src: files/sshd_config
+        dest: /etc/ssh/sshd_config
+        mode: 0644
+      notify:
+        - Restart sshd
+  handlers:
+    - name: Restart sshd
+      become: true
+      become_user: root
+      systemd:
+        name: sshd.service
+        enabled: true
+        state: restarted
