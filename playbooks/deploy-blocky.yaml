@@ -1,32 +1,32 @@
-- hosts: "blocky"
+- hosts: blocky
   serial: 1
   become: true
   become_user: root
   tasks:
     # deploy blocky config
-    - name: "Ensure blocky dir exists"
+    - name: Ensure blocky dir exists
       file:
         path: /etc/blocky
         state: directory
-        mode: 0644
-    - name: "Deploy blocky config"
+        mode: 0755
+    - name: Deploy blocky config
       copy:
         src: files/blocky/config.yml
         dest: /etc/blocky/config.yml
         mode: 0644
-    - name: "Deploy blocky SSL cert"
+    - name: Deploy blocky SSL cert
       copy:
         src: files/blocky/cert.pem
         dest: /etc/blocky/cert.pem
         mode: 0644
-    - name: "Deploy blocky SSL key"
+    - name: Deploy blocky SSL key
       copy:
         src: files/blocky/key.pem
         dest: /etc/blocky/key.pem
         mode: 0644
 
     # deploy blocky
-    - name: "Ensure blocky container is deployed"
+    - name: Ensure blocky container is deployed
       community.docker.docker_container:
         name: blocky
         image: ghcr.io/0xerr0r/blocky:v0.17
@@ -44,11 +44,11 @@
           - /etc/blocky/key.pem:/app/key.pem
 
     # deploy keepalived config
-    - name: "Ensure keepalived dir exists"
+    - name: Ensure keepalived dir exists
       file:
         path: /etc/keepalived
         state: directory
-        mode: 0644
+        mode: 0755
     - name: Deploy keepalived.conf if primary DNS
       copy:
         src: files/blocky/keepalived_primary.conf
@@ -61,25 +61,38 @@
         dest: /etc/keepalived/keepalived.conf
         mode: 0644
       when: inventory_hostname != groups['blocky'][0]
+    - name: Create keepalived_script user
+      user:
+        name: keepalived_script
+        create_home: false
+        system: true
+    - name: Ensure keepalive script folder exists
+      file:
+        path: /etc/keepalived_scripts
+        state: directory
+        mode: 0755
+        owner: keepalived_script
+        group: keepalived_script
     - name: Deploy DNS check script
       copy:
         src: files/blocky/check_dns.sh
-        dest: /etc/keepalived/check_dns.sh
+        dest: /etc/keepalived_scripts/check_dns.sh
         mode: 0755
+        owner: keepalived_script
+        group: keepalived_script
 
-    # deploy keepalived
-    - name: "Ensure keepalived container is deployed"
-      community.docker.docker_container:
+    # ensure keepalived is installed
+    - name: Install/update keepalived
+      apt:
         name: keepalived
-        image: docker.io/linkvt/osixia_keepalived:stable
-        network_mode: host
-        privileged: true
-        restart: true
-        restart_policy: unless-stopped
+        state: present
+    # ensure it's running
+    - name: Set up keepalived service
+      systemd:
+        name: keepalived
+        enabled: true
         state: started
-        volumes:
-          - /etc/keepalived/keepalived.conf:/usr/local/etc/keepalived/keepalived.conf
-          - /etc/keepalived/check_dns.sh:/etc/keepalived/check_dns.sh
-    - name: Wait before updating next host to ensure availability
+
+    - name: Wait before updating next host to ensure DNS availability
       pause:
         seconds: 15
