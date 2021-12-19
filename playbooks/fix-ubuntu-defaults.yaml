@@ -99,11 +99,27 @@
         mode: 0644
       notify:
         - Restart sshd
+    - name: Deploy multipath config
+      become: true
+      become_user: root
+      copy:
+        src: files/multipath.conf
+        dest: /etc/multipath.conf
+        mode: 0644
+      notify:
+        - Restart multipathd
   handlers:
     - name: Restart sshd
       become: true
       become_user: root
       systemd:
         name: sshd.service
+        enabled: true
+        state: restarted
+    - name: Restart multipathd
+      become: true
+      become_user: root
+      systemd:
+        name: multipathd.service
         enabled: true
         state: restarted
