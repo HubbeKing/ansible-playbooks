@@ -3,6 +3,8 @@
   become: true
   become_user: root
   tasks:
+    # ensure docker is installed
+    - include_tasks: tasks/install-docker.yaml
     # deploy blocky config
     - name: Ensure blocky dir exists
       file:
@@ -24,6 +26,15 @@
         src: files/blocky/key.pem
         dest: /etc/blocky/key.pem
         mode: 0644
+
+    - name: Ensure we have the python package(s) needed to deploy blocky
+      apt:
+        name:
+          - python3
+          - python-is-python3
+          - python3-docker
+        state: present
+        update_cache: true
 
     # deploy blocky
     - name: Ensure blocky container is deployed
@@ -85,7 +96,9 @@
     - name: Install/update keepalived
       apt:
         name: keepalived
-        state: present
+        state: latest
+        update_cache: true
+
     # ensure it's running
     - name: Set up keepalived service
       systemd:
