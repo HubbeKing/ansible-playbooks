@@ -4,6 +4,13 @@
       prompt: "Fix ubuntu defaults on which hosts?"
       private: false
   tasks:
+    - name: Deploy apt-cacher-ng config
+      become: true
+      become_user: root
+      copy:
+        src: files/00aptproxy
+        dest: /etc/apt/apt.conf.d/00aptproxy
+        mode: 0644
     - name: Uninstall snapd
       become: true
       become_user: root
