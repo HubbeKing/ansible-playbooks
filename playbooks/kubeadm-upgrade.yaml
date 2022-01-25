@@ -9,7 +9,8 @@
       prompt: "Upgrade cluster to which kubernetes version?"
       private: false
     - name: "package_upgrade"
-      prompt: "Run a full package upgrade as well during upgrade?"
+      prompt: "Run a full package upgrade as well during upgrade? (Y/n)"
+      default: "Y"
       private: false
   tasks:
     - name: Get installed version for node
