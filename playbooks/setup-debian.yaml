@@ -1,0 +1,103 @@
+- hosts: "{{ inventory_hosts }}"
+  vars_prompt:
+    - name: "inventory_hosts"
+      prompt: "Do initial setup on which debian hosts?"
+      private: false
+  tasks:
+    - name: Deploy apt-cacher-ng config
+      become: true
+      become_user: root
+      copy:
+        src: files/00aptproxy
+        dest: /etc/apt/apt.conf.d/00aptproxy
+        mode: 0644
+    - name: Install htop, kitty-terminfo, unattended-upgrades
+      become: true
+      become_user: root
+      with_items:
+        - htop
+        - kitty-terminfo
+        - unattended-upgrades
+      apt:
+        name: "{{ item }}"
+        state: present
+        autoremove: true
+        purge: true
+    - name: Deploy unattended-upgrades config
+      become: true
+      become_user: root
+      copy:
+        dest: /etc/apt/apt.conf.d/20auto-upgrades
+        mode: 0644
+        content: |
+          APT::Periodic::Update-Package-Lists "1";
+          APT::Periodic::Unattended-Upgrade "1";
+    - name: Disable and stop systemd-resolved
+      become: true
+      become_user: root
+      systemd:
+        name: systemd-resolved
+        enabled: false
+        state: stopped
+    - name: Check if /etc/resolv.conf is a symlink
+      become: true
+      become_user: root
+      stat:
+        path: /etc/resolv.conf
+      register: resolvconf
+    - name: Remove /etc/resolv.conf symlink
+      become: true
+      become_user: root
+      file:
+        follow: false
+        path: /etc/resolv.conf
+        state: absent
+      when: resolvconf.stat.islnk is defined and resolvconf.stat.islnk
+    - name: Deploy /etc/resolv.conf
+      become: true
+      become_user: root
+      copy:
+        src: files/resolv.conf
+        dest: /etc/resolv.conf
+        mode: 0644
+    - name: Ensure .ssh dir exists
+      file:
+        path: ~/.ssh
+        state: directory
+        mode: 0755
+    - name: Deploy authorized_keys
+      copy:
+        src: files/authorized_keys
+        dest: ~/.ssh/authorized_keys
+        mode: 0600
+    - name: Deploy bashrc
+      copy:
+        src: files/bashrc
+        dest: ~/.bashrc
+        mode: 0644
+    - name: Deploy bash_profile  # debian default PATH for non-root doesn't include sbin
+      copy:
+        dest: ~/.bash_profile
+        mode: 0644
+        content: |
+          if [ -f "$HOME/.bashrc" ]; then
+            source "$HOME/.bashrc"
+          fi
+          PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+    - name: Deploy sshd config
+      become: true
+      become_user: root
+      copy:
+        src: files/sshd_config
+        dest: /etc/ssh/sshd_config
+        mode: 0644
+      notify:
+        - Restart sshd
+  handlers:
+    - name: Restart sshd
+      become: true
+      become_user: root
+      systemd:
+        name: sshd.service
+        enabled: true
+        state: restarted

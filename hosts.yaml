@@ -65,11 +65,16 @@ all:
         #raptor:
         #viper:
         #blackbird:
+    debian:
+      children:
+        k8s_control_plane:
     ubuntu:
       children:
         blocky:
         ceph:
-        k8s_cluster:
+        k8s_workers:
+      hosts:
+        galactica:
     longhorn:
       hosts:
         pacifica:
