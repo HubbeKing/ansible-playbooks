@@ -11,12 +11,13 @@
         src: files/00aptproxy
         dest: /etc/apt/apt.conf.d/00aptproxy
         mode: 0644
-    - name: Install htop, kitty-terminfo, unattended-upgrades
+    - name: Install htop, kitty-terminfo, lm-sensors, unattended-upgrades
       become: true
       become_user: root
       with_items:
         - htop
         - kitty-terminfo
+        - lm-sensors
         - unattended-upgrades
       apt:
         name: "{{ item }}"
@@ -32,6 +33,20 @@
         content: |
           APT::Periodic::Update-Package-Lists "1";
           APT::Periodic::Unattended-Upgrade "1";
+    - name: Truncate static motd
+      become: true
+      become_user: root
+      copy:
+        dest: /etc/motd
+        mode: 0644
+        content: ""
+    - name: Deploy update-motd.d files
+      become: true
+      become_user: root
+      copy:
+        src: files/update-motd.d/
+        dest: /etc/update-motd.d/
+        mode: 0755
     - name: Disable and stop systemd-resolved
       become: true
       become_user: root
@@ -60,6 +75,13 @@
         src: files/resolv.conf
         dest: /etc/resolv.conf
         mode: 0644
+    - name: Tell dhclient to not change resolv.conf
+      become: true
+      become_user: root
+      copy:
+        dest: /etc/dhcp/dhclient-enter-hooks.d/leave_my_resolv_conf_alone
+        mode: 0755
+        content: "make_resolv_conf() { :; }"
     - name: Ensure .ssh dir exists
       file:
         path: ~/.ssh

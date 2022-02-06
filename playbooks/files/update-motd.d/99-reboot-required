@@ -1,0 +1,9 @@
+#!/bin/bash
+
+if [ -f /var/run/reboot-required ]; then
+    echo "** System restart required **"
+    if [ -f /var/run/reboot-required.pkgs ]; then
+        echo "Packages causing reboot:"
+        cat /var/run/reboot-required.pkgs
+    fi
+fi

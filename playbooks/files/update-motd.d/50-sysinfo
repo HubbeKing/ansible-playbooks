@@ -1,0 +1,34 @@
+#!/bin/bash
+
+# get OS info
+if [ -f /etc/os-release ]; then
+    source /etc/os-release
+else
+    PRETTY_NAME="Linux"
+fi
+
+# Welcome message
+printf "\n%s\n" "$(date)"
+printf "Welcome to ${PRETTY_NAME}\n"
+
+# get sysinfo
+LOAD=`cat /proc/loadavg | awk '{print $2}'`
+DISK_USAGE=`df -h /|grep -v Filesystem|awk '{print $5}'`
+DISK_TOTAL=`df -h /|grep -v Filesystem|awk '{print $2}'`
+MEM_USAGE=`free -m | awk '/Mem/ { printf("%3.1f%%", $3/($2+1)*100) }'`
+MEM_TOTAL=`free --giga | awk '/Mem/ { printf("%3.0f", $2) }'`
+TEMP=`sensors | grep "Package id 0" | awk '{print $4}' | sed 's/+//'`
+PROCS=`ps -e | wc -l`
+INTERFACE=`ip addr show | awk '/inet.*brd/{print $NF; exit}'`
+IPv4=`ip addr show ${INTERFACE} | grep inet | grep -v inet6 | awk '{print $2}'`
+IPv6=`ip addr show ${INTERFACE} | grep inet6 | grep global | awk '{print $2}'`
+
+echo ""
+printf "System load:\t\t%s\n" $LOAD
+printf "Usage of /:\t\t%s of %s\n" $DISK_USAGE $DISK_TOTAL
+printf "Memory usage:\t\t%s of %sG\n" $MEM_USAGE $MEM_TOTAL
+printf "Temperature:\t\t%s°C\n" $TEMP
+printf "Processes:\t\t%s\n" $PROCS
+printf "IPv4 address for ${INTERFACE}:\t%s\n" $IPv4
+printf "IPv6 address for ${INTERFACE}:\t%s\n" $IPv6
+echo ""

@@ -1,0 +1,3 @@
+#!/bin/bash
+UPDATE_COUNT=$(apt list --upgradable|grep -v Listing...|wc -l)
+echo "${UPDATE_COUNT} updates can be applied immediately."
