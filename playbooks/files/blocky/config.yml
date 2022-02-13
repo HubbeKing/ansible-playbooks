@@ -25,33 +25,33 @@ customDNS:
     # OPNsense nextcloud backup compatibility
     cloud.hubbe.club: 192.168.1.3
 
-    unifi.lan: 192.168.1.10
+    unifi.hubbe.club: 192.168.1.10
 
-    blocky.lan: 192.168.1.100
+    blocky.hubbe.club: 192.168.1.100
 
-    osiris.lan: 192.168.1.101
-    solaria.lan: 192.168.1.102
-    wifi-switch.lan: 192.168.1.103
-    k8s-switch.lan: 192.168.1.104
+    osiris.hubbe.club: 192.168.1.101
+    solaria.hubbe.club: 192.168.1.102
+    wifi-switch.hubbe.club: 192.168.1.103
+    k8s-switch.hubbe.club: 192.168.1.104
 
-    ma3a.lan: 192.168.1.111
-    ps4.lan: 192.168.1.112
+    ma3a.hubbe.club: 192.168.1.111
+    ps4.hubbe.club: 192.168.1.112
 
-    apiserver.lan: 192.168.1.120
+    apiserver.hubbe.club: 192.168.1.120
 
-    galactica.lan: 192.168.1.121
-    pacifica.lan: 192.168.1.122
-    valkyrie.lan: 192.168.1.123
-    archeron.lan: 192.168.1.124
+    galactica.hubbe.club: 192.168.1.121
+    pacifica.hubbe.club: 192.168.1.122
+    valkyrie.hubbe.club: 192.168.1.123
+    archeron.hubbe.club: 192.168.1.124
 
-    pegasus.lan: 192.168.1.131
-    ixion.lan: 192.168.1.132
-    atlantia.lan: 192.168.1.133
-    rycon.lan: 192.168.1.134
+    pegasus.hubbe.club: 192.168.1.131
+    ixion.hubbe.club: 192.168.1.132
+    atlantia.hubbe.club: 192.168.1.133
+    rycon.hubbe.club: 192.168.1.134
 
-    raptor.lan: 192.168.1.141
-    viper.lan: 196.168.1.142
-    blackbird.lan: 196.168.1.143
+    raptor.hubbe.club: 192.168.1.141
+    viper.hubbe.club: 196.168.1.142
+    blackbird.hubbe.club: 196.168.1.143
 httpsPort: 443
 httpsCertFile: /app/cert.pem
 httpsKeyFile: /app/key.pem
