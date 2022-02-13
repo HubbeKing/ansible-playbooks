@@ -5,17 +5,6 @@
       prompt: "Which hosts?"
       private: false
   tasks:
-    - import_tasks: tasks/drain-node.yaml
-      vars:
-        host: "{{ inventory_hostname }}"
-
-    - name: Run full upgrade
-      become: true
-      become_user: root
-      apt:
-        upgrade: full
-        update_cache: true
-
     - name: Deploy kubelet config
       become: true
       become_user: root
@@ -23,26 +12,12 @@
         src: files/kubelet.yaml
         dest: /var/lib/kubelet/config.yaml
         mode: 0644
-
-    - name: Check if reboot is required
-      become: true
-      become_user: root
-      register: reboot_required_file
-      stat:
-        path: /var/run/reboot-required
-
-    - name: "Reboot host"
-      become: true
-      become_user: root
-      reboot:
-        msg: "Reboot initiated by Ansible for kernel update"
-        connect_timeout: 5
-        reboot_timeout: 600
-        pre_reboot_delay: 0
-        post_reboot_delay: 60
-        test_command: uptime
-      when: reboot_required_file.stat.exists
-
+      register: config
+    - name: Drain node
+      import_tasks: tasks/drain-node.yaml
+      vars:
+        host: "{{ inventory_hostname }}"
+      when: config.changed
     - name: Restart kubelet
       become: true
       become_user: root
@@ -51,8 +26,9 @@
         enabled: true
         name: kubelet
         state: restarted
-      when: not reboot_required_file.stat.exists
-
-    - import_tasks: tasks/uncordon-node.yaml
+      when: config.changed
+    - name: Uncordon node
+      import_tasks: tasks/uncordon-node.yaml
       vars:
         host: "{{ inventory_hostname }}"
+      when: config.changed
