@@ -1,8 +1,4 @@
-- hosts: "{{ inventory_hosts }}"
-  vars_prompt:
-    - name: "inventory_hosts"
-      prompt: "Do initial setup on which debian hosts?"
-      private: false
+- hosts: debian
   tasks:
     - name: Deploy apt-cacher-ng config
       become: true
