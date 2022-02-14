@@ -22,14 +22,13 @@
         test_command: uptime
       when:
         - reboot_required_file.stat.exists
-    # ensure docker is installed
-    - include_tasks: tasks/install-docker.yaml
     - name: Install ceph packages
       become: true
       become_user: root
       with_items:
         - cephadm
         - ceph-common
+        - podman
       apt:
         name: "{{ item }}"
         state: present
