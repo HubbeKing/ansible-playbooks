@@ -1,8 +1,4 @@
 - hosts: ubuntu
-  vars_prompt:
-    - name: "inventory_hosts"
-      prompt: "Fix ubuntu defaults on which hosts?"
-      private: false
   tasks:
     - name: Deploy apt-cacher-ng config
       become: true
