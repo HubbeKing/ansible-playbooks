@@ -19,6 +19,7 @@
     update_cache: true
   when:
     - "'rpi' in group_names"
+    - "'ubuntu' in group_names"
 
 - name: "Check if reboot is required"
   register: reboot_required_file

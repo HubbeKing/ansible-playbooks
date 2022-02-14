@@ -62,9 +62,9 @@ all:
         solaria:
     ceph:
       hosts:
-        #raptor:
-        #viper:
-        #blackbird:
+        raptor:
+        viper:
+        blackbird:
     debian:
       children:
         k8s_control_plane:
