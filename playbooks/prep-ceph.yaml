@@ -22,6 +22,15 @@
         test_command: uptime
       when:
         - reboot_required_file.stat.exists
+    - name: Deploy SSH udev rule
+      become: true
+      become_user: root
+      copy:
+        src: files/60-ssd-scheduler.rules
+        dest: /etc/udev/rules.d/60-ssd-scheduler.rules
+        mode: 0644
+      notify:
+        - Reload udev rules
     - name: Install ceph packages
       become: true
       become_user: root
@@ -35,3 +44,9 @@
         autoremove: true
         purge: true
         update_cache: true
+  handlers:
+    - name: Reload udev rules
+      become: true
+      become_user: root
+      command:
+        cmd: udevadm control --reload-rules
