@@ -55,23 +55,23 @@ all:
     rpi:
       children:
         blocky:
-        ceph:
+        glusterfs:
     blocky:
       hosts:
         osiris:
         solaria:
-    ceph:
+    glusterfs:
       hosts:
         raptor:
         viper:
         blackbird:
     debian:
       children:
+        glusterfs:
         k8s_control_plane:
     ubuntu:
       children:
         blocky:
-        ceph:
         k8s_workers:
       hosts:
         galactica:
