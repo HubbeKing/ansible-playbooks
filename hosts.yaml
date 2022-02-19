@@ -55,19 +55,19 @@ all:
     rpi:
       children:
         blocky:
-        glusterfs:
+        storage:
     blocky:
       hosts:
         osiris:
         solaria:
-    glusterfs:
+    storage:
       hosts:
         raptor:
         viper:
         blackbird:
     debian:
       children:
-        glusterfs:
+        storage:
         k8s_control_plane:
     ubuntu:
       children:

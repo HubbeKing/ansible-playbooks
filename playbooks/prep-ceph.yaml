@@ -41,84 +41,51 @@
         mode: 0644
       notify:
         - Reload udev rules
-    - name: Install glusterfs
+    - name: Install podman
+      become: true
+      become_user: root
+      apt:
+        name: podman
+        state: present
+    - name: Deploy apt preferences files for testing repo usage
+      become: true
+      become_user: root
+      copy:
+        src: files/ceph/preferences.d/
+        dest: /etc/apt/preferences.d/
+        mode: 0644
+    - name: Deploy apt sources files for testing repo usage
+      become: true
+      become_user: root
+      copy:
+        src: files/ceph/sources.list.d/
+        dest: /etc/apt/sources.list.d/
+        mode: 0644
+    - name: Comment out sources.list
+      become: true
+      become_user: root
+      copy:
+        content: |
+          #deb http://deb.debian.org/debian bullseye main contrib non-free
+          #deb http://security.debian.org/debian-security bullseye-security main contrib non-free
+          #deb http://deb.debian.org/debian bullseye-updates main contrib non-free
+          # Uncomment deb-src lines below then 'apt-get update' to enable 'apt-get source'
+          #deb-src http://deb.debian.org/debian bullseye main contrib non-free
+          #deb-src http://security.debian.org/debian-security bullseye-security main contrib non-free
+          #deb-src http://deb.debian.org/debian bullseye-updates main contrib non-free
+        dest: /etc/apt/sources.list
+        mode: 0644
+    - name: Install ceph packages from testing
       become: true
       become_user: root
       with_items:
-        - glusterfs-server
+        - ceph-common
+        - cephadm
       apt:
         name: "{{ item }}"
+        default_release: testing
         state: present
         update_cache: true
-    - name: Create LVM volume groups
-      become: true
-      become_user: root
-      with_items:
-        - /dev/sda
-        - /dev/sdb
-      community.general.lvg:
-        pvs: "{{ item }}"
-        vg: "data.{{ item | basename }}"
-    - name: Create LVM thinpools
-      become: true
-      become_user: root
-      with_items:
-        - data.sda
-        - data.sdb
-      community.general.lvol:
-        thinpool: "{{ item }}-pool"
-        vg: "{{ item }}"
-    - name: Create LVM bricks
-      become: true
-      become_user: root
-      with_items:
-        - data.sda
-        - data.sdb
-      community.general.lvol:
-        lv: brick
-        size: 450G
-        thinpool: "{{ item }}-pool"
-        vg: "{{ item }}"
-    - name: Set up XFS on LVM bricks
-      become: true
-      become_user: root
-      with_items:
-        - /dev/data.sda/brick
-        - /dev/data.sdb/brick
-      community.general.filesystem:
-        dev: "{{ item }}"
-        fstype: xfs
-    - name: Create mount points for LVM bricks
-      become: true
-      become_user: root
-      with_items:
-        - /data/sda/brick
-        - /data/sdb/brick
-      file:
-        path: "{{ item }}"
-        mode: 0755
-        state: directory
-    - name: Set up fstab rules for LVM bricks
-      become: true
-      become_user: root
-      with_items:
-        - sda
-        - sdb
-      lineinfile:
-        path: /etc/fstab
-        line: "/dev/data.{{ item }}/brick /data/{{ item }}/brick xfs defaults 0 0"
-    - name: Mount LVM bricks
-      become: true
-      become_user: root
-      command:
-        cmd: mount -a
-    - name: Enable & Start GlusterFS server
-      become: true
-      become_user: root
-      systemd:
-        name: glusterd
-        enabled: true
-        state: started
   handlers:
     - name: Reload udev rules
       become: true
