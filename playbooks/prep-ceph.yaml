@@ -41,12 +41,6 @@
         mode: 0644
       notify:
         - Reload udev rules
-    - name: Install podman
-      become: true
-      become_user: root
-      apt:
-        name: podman
-        state: present
     - name: Deploy apt preferences files for testing repo usage
       become: true
       become_user: root
@@ -75,6 +69,13 @@
           #deb-src http://deb.debian.org/debian bullseye-updates main contrib non-free
         dest: /etc/apt/sources.list
         mode: 0644
+    - name: Install podman
+      become: true
+      become_user: root
+      apt:
+        name: podman
+        state: present
+        update_cache: true
     - name: Install ceph packages from testing
       become: true
       become_user: root
@@ -84,6 +85,8 @@
         - nfs-ganesha
         - nfs-ganesha-ceph
         - nfs-ganesha-rados-grace
+        - libc6     # needed for ceph-common, since it depends on libc6 >= 2.33
+        - libc-bin  # needed for ceph-common, since it depends on libc6 >= 2.33
       apt:
         name: "{{ item }}"
         default_release: testing
