@@ -82,3 +82,8 @@
       become_user: root
       command:
         cmd: udevadm control --reload-rules
+    - name: Restart sshd
+      systemd:
+        name: sshd.service
+        enabled: true
+        state: restarted
