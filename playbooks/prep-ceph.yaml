@@ -1,96 +1,80 @@
 - hosts: storage
   tasks:
-    - name: "Run full upgrade"
-      become: true
-      become_user: root
+    - name: Run full upgrade
       apt:
         upgrade: full
         update_cache: true
+    - name: Install htop and kitty-terminfo
+      apt:
+        name: 
+          - htop
+          - kitty-terminfo
+        state: present
     # https://forums.raspberrypi.com/viewtopic.php?t=245931
-    - name: "Blacklist UAS for flaky SABRENT devices"
-      become: true
-      become_user: root
+    - name: Blacklist UAS for flaky SABRENT devices
       replace:
-        backup: true
-        dest: /boot/cmdline.txt
+        path: /boot/firmware/cmdline.txt
         mode: 0644
-        regexp: "^console=serial0,115200.*"
-        replace: "usb-storage.quirks=152d:1561:u console=serial0,115200"
+        regexp: "^console=tty0"
+        replace: "usb-storage.quirks=152d:1561:u console=tty0"
       register: cmdline
-    - name: "Check if reboot is required"
+    - name: Set hostname
+      copy:
+        content: "{{ inventory_hostname }}"
+        dest: /etc/hostname
+      register: hostname
+    - name: Set hosts
+      lineinfile:
+        line: "127.0.1.1 {{ inventory_hostname }}"
+        mode: 0644
+        path: /etc/hosts
+    - name: Deploy sshd config
+      copy:
+        src: files/sshd_config
+        dest: /etc/ssh/sshd_config
+        mode: 0644
+      notify:
+        - Restart sshd
+    - name: Ensure .ssh dir exists
+      file:
+        path: ~/.ssh
+        state: directory
+        mode: 0755
+    - name: Deploy authorized_keys
+      copy:
+        src: files/authorized_keys
+        dest: ~/.ssh/authorized_keys
+        mode: 0600
+    - name: Check if reboot is required for package upgrade
       register: reboot_required_file
       stat:
         path: /var/run/reboot-required
-    - name: "Reboot host"
-      become: true
-      become_user: root
+    - name: Reboot host
       reboot:
-        msg: "Reboot initiated by Ansible for kernel update"
+        msg: Reboot initiated by Ansible for kernel update
         connect_timeout: 5
         reboot_timeout: 600
         pre_reboot_delay: 0
         post_reboot_delay: 60
         test_command: uptime
-      when: reboot_required_file.stat.exists or cmdline.changed
+      when: reboot_required_file.stat.exists or cmdline.changed or hostname.changed
     - name: Deploy SSD udev rule
-      become: true
-      become_user: root
       copy:
         src: files/60-ssd-scheduler.rules
         dest: /etc/udev/rules.d/60-ssd-scheduler.rules
         mode: 0644
       notify:
         - Reload udev rules
-    - name: Deploy apt preferences files for testing repo usage
-      become: true
-      become_user: root
-      copy:
-        src: files/ceph/preferences.d/
-        dest: /etc/apt/preferences.d/
-        mode: 0644
-    - name: Deploy apt sources files for testing repo usage
-      become: true
-      become_user: root
-      copy:
-        src: files/ceph/sources.list.d/
-        dest: /etc/apt/sources.list.d/
-        mode: 0644
-    - name: Comment out sources.list
-      become: true
-      become_user: root
-      copy:
-        content: |
-          #deb http://deb.debian.org/debian bullseye main contrib non-free
-          #deb http://security.debian.org/debian-security bullseye-security main contrib non-free
-          #deb http://deb.debian.org/debian bullseye-updates main contrib non-free
-          # Uncomment deb-src lines below then 'apt-get update' to enable 'apt-get source'
-          #deb-src http://deb.debian.org/debian bullseye main contrib non-free
-          #deb-src http://security.debian.org/debian-security bullseye-security main contrib non-free
-          #deb-src http://deb.debian.org/debian bullseye-updates main contrib non-free
-        dest: /etc/apt/sources.list
-        mode: 0644
-    - name: Install podman
-      become: true
-      become_user: root
-      apt:
-        name: podman
-        state: present
-        update_cache: true
-    - name: Install ceph packages from testing
-      become: true
-      become_user: root
+    - name: Install ceph packages
       with_items:
         - ceph-common
         - cephadm
         - nfs-ganesha
         - nfs-ganesha-ceph
         - nfs-ganesha-rados-grace
-        - libc6     # needed for ceph-common, since it depends on libc6 >= 2.33
-        - libc-bin  # needed for ceph-common, since it depends on libc6 >= 2.33
+        - podman
       apt:
         name: "{{ item }}"
-        default_release: testing
-        state: present
         update_cache: true
   handlers:
     - name: Reload udev rules
