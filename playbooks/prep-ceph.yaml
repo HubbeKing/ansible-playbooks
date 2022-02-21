@@ -35,16 +35,6 @@
         mode: 0644
       notify:
         - Restart sshd
-    - name: Ensure .ssh dir exists
-      file:
-        path: ~/.ssh
-        state: directory
-        mode: 0755
-    - name: Deploy authorized_keys
-      copy:
-        src: files/authorized_keys
-        dest: ~/.ssh/authorized_keys
-        mode: 0600
     - name: Check if reboot is required for package upgrade
       register: reboot_required_file
       stat:
@@ -66,15 +56,11 @@
       notify:
         - Reload udev rules
     - name: Install ceph packages
-      with_items:
+      apt:
+        name:
         - ceph-common
         - cephadm
-        - nfs-ganesha
-        - nfs-ganesha-ceph
-        - nfs-ganesha-rados-grace
         - podman
-      apt:
-        name: "{{ item }}"
         update_cache: true
   handlers:
     - name: Reload udev rules
