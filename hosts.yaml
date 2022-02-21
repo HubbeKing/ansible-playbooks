@@ -44,17 +44,17 @@ all:
     raptor:
       # RPi 4 2GB (plain debian 12 https://raspi.debian.net/)
       ansible_host: 192.168.1.141
-      ansible_python_interpreter: /usr/bin/python
+      ansible_python_interpreter: /usr/bin/python3
       ansible_user: root
     viper:
       # RPi 4 2GB (plain debian 12 https://raspi.debian.net/)
       ansible_host: 192.168.1.142
-      ansible_python_interpreter: /usr/bin/python
+      ansible_python_interpreter: /usr/bin/python3
       ansible_user: root
     blackbird:
       # RPi 4 2GB (plain debian 12 https://raspi.debian.net/)
       ansible_host: 192.168.1.143
-      ansible_python_interpreter: /usr/bin/python
+      ansible_python_interpreter: /usr/bin/python3
       ansible_user: root
 
   children:
