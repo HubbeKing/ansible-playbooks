@@ -4,11 +4,12 @@
       apt:
         upgrade: full
         update_cache: true
-    - name: Install htop and kitty-terminfo
+    - name: Install htop, kitty-terminfo, and lvm2
       apt:
         name: 
           - htop
           - kitty-terminfo
+          - lvm2
         state: present
     # https://forums.raspberrypi.com/viewtopic.php?t=245931
     - name: Blacklist UAS for flaky SABRENT devices
@@ -49,8 +50,6 @@
       stat:
         path: /var/run/reboot-required
     - name: Reboot host
-      become: true
-      become_user: root
       reboot:
         msg: Reboot initiated by Ansible
         connect_timeout: 5
@@ -60,8 +59,6 @@
         test_command: uptime
       when: reboot_required_file.stat.exists or cmdline.changed or hostname.changed
     - name: Deploy SSD udev rule
-      become: true
-      become_user: root
       copy:
         src: files/60-ssd-scheduler.rules
         dest: /etc/udev/rules.d/60-ssd-scheduler.rules
@@ -69,15 +66,11 @@
       notify:
         - Reload udev rules
     - name: Install glusterfs
-      become: true
-      become_user: root
       apt:
         name: glusterfs-server
         state: present
         update_cache: true
     - name: Create LVM volume groups
-      become: true
-      become_user: root
       with_items:
         - /dev/sda
         - /dev/sdb
@@ -85,17 +78,14 @@
         pvs: "{{ item }}"
         vg: "data.{{ item | basename }}"
     - name: Create LVM thinpools
-      become: true
-      become_user: root
       with_items:
         - data.sda
         - data.sdb
       community.general.lvol:
         thinpool: "{{ item }}-pool"
+        size: 450G
         vg: "{{ item }}"
     - name: Create LVM bricks
-      become: true
-      become_user: root
       with_items:
         - data.sda
         - data.sdb
@@ -105,8 +95,6 @@
         thinpool: "{{ item }}-pool"
         vg: "{{ item }}"
     - name: Set up XFS on LVM bricks
-      become: true
-      become_user: root
       with_items:
         - /dev/data.sda/brick
         - /dev/data.sdb/brick
@@ -114,32 +102,17 @@
         dev: "{{ item }}"
         fstype: xfs
     - name: Create mount points for LVM bricks
-      become: true
-      become_user: root
-      with_items:
-        - /data/sda/brick
-        - /data/sdb/brick
-      file:
-        path: "{{ item }}"
-        mode: 0755
-        state: directory
-    - name: Set up fstab rules for LVM bricks
-      become: true
-      become_user: root
       with_items:
         - sda
         - sdb
-      lineinfile:
-        path: /etc/fstab
-        line: "/dev/data.{{ item }}/brick /data/{{ item }}/brick xfs defaults 0 0"
-    - name: Mount LVM bricks
-      become: true
-      become_user: root
-      command:
-        cmd: mount -a
+      ansible.posix.mount:
+        backup: true
+        boot: true
+        fstype: xfs
+        path: "/data/{{ item }}"
+        src: "/dev/data.{{ item }}/brick"
+        state: mounted
     - name: Enable & Start GlusterFS server
-      become: true
-      become_user: root
       systemd:
         name: glusterd
         enabled: true
