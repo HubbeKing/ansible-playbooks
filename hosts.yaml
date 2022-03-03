@@ -8,7 +8,7 @@ all:
       ansible_host: 192.168.1.102
 
     galactica:
-      # NAS Custom
+      # TrueNAS Custom
       # Intel Celeron G4900
       ansible_host: 192.168.1.121
     pacifica:
@@ -78,8 +78,6 @@ all:
       children:
         blocky:
         k8s_workers:
-      hosts:
-        galactica:
     longhorn:
       hosts:
         pacifica:
