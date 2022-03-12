@@ -14,10 +14,14 @@
     - name: Blacklist UAS for flaky SABRENT devices
       copy:
         content: |
-          usb-storage.quirks=152d:1561:u console=tty0 console=ttyS1,115200 root=LABEL=RASPIROOT rw fsck.repair=yes net.ifnames=0 rootwait
-        dest: /boot/firmware/cmdline.txt
+          usb-storage.quirks=152d:1561:u
+        dest: /etc/default/raspi-extra-cmdline
         mode: 0644
       register: cmdline
+    - name: Regenerate initramfs
+      command:
+        cmd: update-initramfs -u
+      when: cmdline.changed
     - name: Set hostname
       copy:
         content: "{{ inventory_hostname }}"

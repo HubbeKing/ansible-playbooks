@@ -14,10 +14,15 @@
     # https://forums.raspberrypi.com/viewtopic.php?t=245931
     - name: Blacklist UAS for flaky SABRENT devices
       copy:
-        content: "usb-storage.quirks=152d:1561:u console=tty0 console=ttyS1,115200 root=LABEL=RASPIROOT rw fsck.repair=yes net.ifnames=0 rootwait"
-        dest: /boot/firmware/cmdline.txt
+        content: |
+          usb-storage.quirks=152d:1561:u
+        dest: /etc/default/raspi-extra-cmdline
         mode: 0644
       register: cmdline
+    - name: Regenerate initramfs
+      command:
+        cmd: update-initramfs -u
+      when: cmdline.changed
     - name: Set hostname
       copy:
         content: "{{ inventory_hostname }}"
@@ -94,13 +99,13 @@
         size: 450G
         thinpool: "{{ item }}-pool"
         vg: "{{ item }}"
-    - name: Set up XFS on LVM bricks
+    - name: Set up ext4 on LVM bricks
       with_items:
         - /dev/data.sda/brick
         - /dev/data.sdb/brick
       community.general.filesystem:
         dev: "{{ item }}"
-        fstype: xfs
+        fstype: ext4
     - name: Create mount points for LVM bricks
       with_items:
         - sda
@@ -108,7 +113,7 @@
       ansible.posix.mount:
         backup: true
         boot: true
-        fstype: xfs
+        fstype: ext4
         path: "/data/{{ item }}"
         src: "/dev/data.{{ item }}/brick"
         state: mounted

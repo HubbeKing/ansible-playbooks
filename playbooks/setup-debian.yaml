@@ -1,12 +1,5 @@
 - hosts: debian
   tasks:
-    - name: Deploy apt-cacher-ng config
-      become: true
-      become_user: root
-      copy:
-        src: files/00aptproxy
-        dest: /etc/apt/apt.conf.d/00aptproxy
-        mode: 0644
     - name: Install htop, kitty-terminfo, lm-sensors, unattended-upgrades
       become: true
       become_user: root

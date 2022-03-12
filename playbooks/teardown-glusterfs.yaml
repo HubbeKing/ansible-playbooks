@@ -46,11 +46,6 @@
         - /dev/sdb
       command:
         cmd: "wipefs --all {{ item }}"
-    - name: Uninstall glusterfs
-      apt:
-        name: glusterfs-server
-        purge: true
-        state: absent
   handlers:
     - name: Reload udev rules
       command:
