@@ -1,4 +1,4 @@
-- hosts: blocky
+- hosts: osiris
   serial: 1
   become: true
   become_user: root
@@ -96,7 +96,7 @@
       copy:
         src: files/blocky/check_dns.sh
         dest: /etc/keepalived_scripts/check_dns.sh
-        mode: 0755
+        mode: 0700
         owner: keepalived_script
         group: keepalived_script
       register: check_script
@@ -105,6 +105,12 @@
     - name: Install keepalived
       apt:
         name: keepalived
+        state: present
+
+    # ensure 'dig' command is available
+    - name: Install dnsutils
+      apt:
+        name: bind9-dnsutils
         state: present
 
     # ensure it's running
