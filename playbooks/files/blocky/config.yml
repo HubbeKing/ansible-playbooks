@@ -35,28 +35,24 @@ customDNS:
 
     osiris.hubbe.club: 192.168.1.101
     solaria.hubbe.club: 192.168.1.102
-    wifi-switch.hubbe.club: 192.168.1.103
-    k8s-switch.hubbe.club: 192.168.1.104
-    ceph-switch.hubbe.club: 192.168.1.105
+    root-switch.hubbe.club: 192.168.1.103
+    wifi-switch.hubbe.club: 192.168.1.104
+    k8s-switch.hubbe.club: 192.168.1.105
 
     ma3a.hubbe.club: 192.168.1.111
     ps4.hubbe.club: 192.168.1.112
 
-    apiserver.hubbe.club: 192.168.1.120
-
     galactica.hubbe.club: 192.168.1.121
-    pacifica.hubbe.club: 192.168.1.122
-    valkyrie.hubbe.club: 192.168.1.123
-    archeron.hubbe.club: 192.168.1.124
 
-    pegasus.hubbe.club: 192.168.1.131
-    ixion.hubbe.club: 192.168.1.132
-    atlantia.hubbe.club: 192.168.1.133
-    rycon.hubbe.club: 192.168.1.134
+    apiserver.hubbe.club: 192.168.1.130
 
-    raptor.hubbe.club: 192.168.1.141
-    viper.hubbe.club: 192.168.1.142
-    blackbird.hubbe.club: 192.168.1.143
+    pacifica.hubbe.club: 192.168.1.131
+    valkyrie.hubbe.club: 192.168.1.132
+    pegasus.hubbe.club: 192.168.1.133
+
+    ixion.hubbe.club: 192.168.1.134
+    atlantia.hubbe.club: 192.168.1.135
+    rycon.hubbe.club: 192.168.1.136
 httpsPort: 443
 keyFile: /app/key.pem
 port: 53

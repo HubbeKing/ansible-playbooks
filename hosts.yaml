@@ -3,81 +3,57 @@ all:
     osiris:
       # RPi 3 B+
       ansible_host: 192.168.1.101
+      ansible_user: root
     solaria:
       # RPi 3 B+
       ansible_host: 192.168.1.102
+      ansible_user: root
 
     galactica:
       # TrueNAS Custom
       # Intel Celeron G4900
       ansible_host: 192.168.1.121
+
     pacifica:
       # ASRock DeskMini 310
       # Intel Core i3-8100
-      ansible_host: 192.168.1.122
+      ansible_host: 192.168.1.131
     valkyrie:
       # Intel NUC D54250WYK
       # Intel Core i5-4250U
-      ansible_host: 192.168.1.123
-    archeron:
-      # Acer Aspire A114
-      # Intel Pentium Silver N5000
-      ansible_host: 192.168.1.124
-
+      ansible_host: 192.168.1.132
     pegasus:
       # HP EliteDesk 800 G1 DM
       # Intel Core i5-4590T
-      ansible_host: 192.168.1.131
+      ansible_host: 192.168.1.133
     ixion:
       # Dell Optiplex 7040M
       # Intel Core i7-6700T
-      ansible_host: 192.168.1.132
+      ansible_host: 192.168.1.134
     atlantia:
       # Lenovo Thinkcentre M700 Tiny
       # Intel Core i5-6400T
-      ansible_host: 192.168.1.133
+      ansible_host: 192.168.1.135
     rycon:
       # AMD Custom
       # AMD Ryzen 5 1600
-      ansible_host: 192.168.1.134
-
-    raptor:
-      # RPi 4 2GB (plain debian 12 https://raspi.debian.net/)
-      ansible_host: 192.168.1.141
-      ansible_python_interpreter: /usr/bin/python3
-      ansible_user: root
-    viper:
-      # RPi 4 2GB (plain debian 12 https://raspi.debian.net/)
-      ansible_host: 192.168.1.142
-      ansible_python_interpreter: /usr/bin/python3
-      ansible_user: root
-    blackbird:
-      # RPi 4 2GB (plain debian 12 https://raspi.debian.net/)
-      ansible_host: 192.168.1.143
-      ansible_python_interpreter: /usr/bin/python3
-      ansible_user: root
+      ansible_host: 192.168.1.136
 
   children:
     rpi:
       children:
         blocky:
-        storage:
     blocky:
       hosts:
         osiris:
         solaria:
-    storage:
-      hosts:
-        raptor:
-        viper:
-        blackbird:
     debian:
       children:
-        k8s_control_plane:
-    ubuntu:
-      children:
         blocky:
-        k8s_workers:
+        k8s_cluster:
+    ubuntu:
+      hosts:
+        osiris:
     longhorn:
       hosts:
         pacifica:
@@ -89,11 +65,10 @@ all:
     k8s_control_plane:
       hosts:
         pacifica:
-        archeron:
         valkyrie:
+        pegasus:
     k8s_workers:
       hosts:
-        pegasus:
         ixion:
         atlantia:
         rycon:
