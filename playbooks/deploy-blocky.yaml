@@ -1,4 +1,4 @@
-- hosts: osiris
+- hosts: blocky
   serial: 1
   become: true
   become_user: root
