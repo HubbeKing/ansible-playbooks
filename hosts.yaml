@@ -34,10 +34,6 @@ all:
       # Lenovo Thinkcentre M700 Tiny
       # Intel Core i5-6400T
       ansible_host: 192.168.1.135
-    rycon:
-      # AMD Custom
-      # AMD Ryzen 5 1600
-      ansible_host: 192.168.1.136
 
   children:
     rpi:
