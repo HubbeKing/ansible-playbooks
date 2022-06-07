@@ -35,7 +35,7 @@
     - name: Deploy blocky container
       containers.podman.podman_container:
         name: blocky
-        image: ghcr.io/0xerr0r/blocky:v0.18
+        image: ghcr.io/0xerr0r/blocky:v0.19
         generate_systemd:
           path: /etc/systemd/system/
           restart_policy: always
