@@ -2,28 +2,21 @@ bootstrapDns: tcp+udp:1.1.1.1:53
 blocking:
   blackLists:
     ads:
-      - https://raw.githubusercontent.com/PolishFiltersTeam/KADhosts/master/KADhosts_without_controversies.txt
-      - https://raw.githubusercontent.com/FadeMind/hosts.extras/master/add.Spam/hosts
-      - https://v.firebog.net/hosts/static/w3kbl.txt
       - https://adaway.org/hosts.txt
-      - https://v.firebog.net/hosts/AdguardDNS.txt
-      - https://raw.githubusercontent.com/anudeepND/blacklist/master/adservers.txt
-      - https://s3.amazonaws.com/lists.disconnect.me/simple_ad.txt
       - https://v.firebog.net/hosts/Easylist.txt
-      - https://pgl.yoyo.org/adservers/serverlist.php?hostformat=hosts&amp;showintro=0&amp;mimetype=plaintext
-      - https://raw.githubusercontent.com/FadeMind/hosts.extras/master/UncheckyAds/hosts
+    malware:
+      - https://urlhaus.abuse.ch/downloads/hostfile/
+    tracking:
+      - https://v.firebog.net/hosts/Easyprivacy.txt
   blockType: nxDomain
   blockTTL: 5m
   clientGroupsBlock:
     default:
       - ads
+      - malware
+      - tracking
+    192.168.1.111/24: []
   refreshPeriod: 60m
-  whiteLists:
-    ads:
-      - https://raw.githubusercontent.com/anudeepND/whitelist/master/domains/whitelist.txt
-      - |
-        # analytics
-        analytics.google.com
 certFile: /app/cert.pem
 customDNS:
   # send unmapped entries (non-A records) for hubbe.club to upstream resolvers
