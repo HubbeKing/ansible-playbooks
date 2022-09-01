@@ -1,5 +1,5 @@
 - name: "Drain node"
-  command: kubectl drain {{ host }} --ignore-daemonsets --delete-emptydir-data
+  command: kubectl drain {{ host }} --ignore-daemonsets --delete-emptydir-data --timeout=0
   delegate_to: 127.0.0.1
   when:
     - "'k8s_cluster' in group_names"
