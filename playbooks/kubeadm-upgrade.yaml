@@ -35,7 +35,7 @@
             name: kubeadm={{ k8s_version }}-00
             state: present
             update_cache: true
-            force: true  # TODO change to allow_change_held_packages once ansible supports it
+            allow_change_held_packages: true
 
         - name: "Hold kubeadm package"
           become: true
@@ -71,7 +71,7 @@
             name: "{{ item }}"
             state: present
             update_cache: true
-            force: true  # TODO change to allow_change_held_packages once ansible supports it
+            allow_change_held_packages: true
           with_items:
             - kubelet={{ k8s_version }}-00
             - kubectl={{ k8s_version }}-00
@@ -96,7 +96,7 @@
             name: containerd.io
             state: latest
             update_cache: true
-            force: true  # TODO change to allow_change_held_packages once ansible supports it
+            allow_change_held_packages: true
         - name: "Hold containerd package"
           become: true
           become_user: root
