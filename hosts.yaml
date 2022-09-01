@@ -34,8 +34,23 @@ all:
       # Lenovo Thinkcentre M700 Tiny
       # Intel Core i5-6400T
       ansible_host: 192.168.1.135
+    rycon:
+      # Ryzen Custom
+      # Ryzen 5 1600
+      ansible_host: 192.168.1.136
 
+    durandal:
+      # VM
+      ansible_host: 192.168.1.141
+    shodan:
+      # VM
+      ansible_host: 192.168.1.142
   children:
+    proxmox_hosts:
+      rycon:
+    proxmox_vms:
+      durandal:
+      shodan:
     rpi:
       children:
         blocky:
@@ -54,6 +69,7 @@ all:
         pegasus:
         ixion:
         atlantia:
+        durandal:
     k8s_control_plane:
       hosts:
         pacifica:
@@ -63,6 +79,7 @@ all:
       hosts:
         ixion:
         atlantia:
+        durandal:
     k8s_cluster:
       children:
         k8s_control_plane:
