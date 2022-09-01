@@ -2,19 +2,12 @@ bootstrapDns: tcp+udp:1.1.1.1:53
 blocking:
   blackLists:
     ads:
-      - https://adaway.org/hosts.txt
-      - https://v.firebog.net/hosts/Easylist.txt
-    malware:
-      - https://urlhaus.abuse.ch/downloads/hostfile/
-    tracking:
-      - https://v.firebog.net/hosts/Easyprivacy.txt
+      - https://raw.githubusercontent.com/AdAway/adaway.github.io/master/hosts.txt
   blockType: nxDomain
   blockTTL: 5m
   clientGroupsBlock:
     default:
       - ads
-      - malware
-      - tracking
     192.168.1.111/24: []
   refreshPeriod: 60m
 certFile: /app/cert.pem
@@ -28,29 +21,32 @@ customDNS:
 
     # auto-detection of controller for unifi devices relies on DNS
     unifi: 192.168.1.10
-    unifi.hubbe.club: 192.168.1.10
+    unifi.lan: 192.168.1.10
 
-    blocky.hubbe.club: 192.168.1.100
+    blocky.lan: 192.168.1.100
 
-    osiris.hubbe.club: 192.168.1.101
-    solaria.hubbe.club: 192.168.1.102
-    root-switch.hubbe.club: 192.168.1.103
-    wifi-switch.hubbe.club: 192.168.1.104
-    k8s-switch.hubbe.club: 192.168.1.105
+    osiris.lan: 192.168.1.101
+    solaria.lan: 192.168.1.102
+    root-switch.lan: 192.168.1.103
+    wifi-switch.lan: 192.168.1.104
+    k8s-switch.lan: 192.168.1.105
 
-    ma3a.hubbe.club: 192.168.1.111
-    ps4.hubbe.club: 192.168.1.112
+    ma3a.lan: 192.168.1.111
+    ps4.lan: 192.168.1.112
 
-    galactica.hubbe.club: 192.168.1.121
+    galactica.lan: 192.168.1.121
 
-    apiserver.hubbe.club: 192.168.1.130
+    apiserver.lan: 192.168.1.130
 
-    pacifica.hubbe.club: 192.168.1.131
-    valkyrie.hubbe.club: 192.168.1.132
-    pegasus.hubbe.club: 192.168.1.133
+    pacifica.lan: 192.168.1.131
+    valkyrie.lan: 192.168.1.132
+    pegasus.lan: 192.168.1.133
 
-    ixion.hubbe.club: 192.168.1.134
-    atlantia.hubbe.club: 192.168.1.135
+    ixion.lan: 192.168.1.134
+    atlantia.lan: 192.168.1.135
+
+    durandal.lan: 192.168.1.141
+    shodan.lan: 192.168.1.142
 httpsPort: 443
 keyFile: /app/key.pem
 port: 53
