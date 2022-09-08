@@ -1,14 +1,5 @@
 all:
   hosts:
-    osiris:
-      # RPi 3 B+
-      ansible_host: 192.168.1.101
-      ansible_user: root
-    solaria:
-      # RPi 3 B+
-      ansible_host: 192.168.1.102
-      ansible_user: root
-
     galactica:
       # TrueNAS Custom
       # Intel Celeron G4900
