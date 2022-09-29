@@ -1,7 +1,7 @@
 - name: Install required packages for official docker repo
   become: true
   become_user: root
-  apt:
+  ansible.builtin.apt:
     name:
       - apt-transport-https
       - ca-certificates
@@ -13,7 +13,7 @@
 - name: Install required kernel modules on rpi
   become: true
   become_user: root
-  apt:
+  ansible.builtin.apt:
     name: linux-modules-extra-raspi
     state: present
     update_cache: true
@@ -23,13 +23,13 @@
 
 - name: "Check if reboot is required"
   register: reboot_required_file
-  stat:
+  ansible.builtin.stat:
     path: /var/run/reboot-required
 
 - name: "Reboot host"
   become: true
   become_user: root
-  reboot:
+  ansible.builtin.reboot:
     msg: "Reboot initiated by Ansible for kernel update"
     connect_timeout: 5
     reboot_timeout: 600
@@ -42,14 +42,14 @@
 - name: Fetch docker repo signing key
   become: true
   become_user: root
-  apt_key:
+  ansible.builtin.apt_key:
     url: https://download.docker.com/linux/ubuntu/gpg
     keyring: /usr/share/keyrings/docker-archive-keyring.gpg
 
 - name: Add docker repo to apt sources
   become: true
   become_user: root
-  template:
+  ansible.builtin.template:
     src: templates/docker-sources.j2
     dest: /etc/apt/sources.list.d/docker.list
     mode: 0644
@@ -57,7 +57,7 @@
 - name: Install docker engine
   become: true
   become_user: root
-  apt:
+  ansible.builtin.apt:
     name:
       - containerd.io
       - docker-ce
@@ -67,7 +67,7 @@
 - name: Enable docker service
   become: true
   become_user: root
-  systemd:
+  ansible.builtin.systemd:
     name: docker
     enabled: true
     state: started

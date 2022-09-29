@@ -1,9 +1,10 @@
 - hosts: ubuntu
+  name: Remove and disable dumb defaults in Ubuntu
   tasks:
     - name: Uninstall snapd
       become: true
       become_user: root
-      apt:
+      ansible.builtin.apt:
         name: snapd
         state: absent
         autoremove: true
@@ -11,20 +12,20 @@
     - name: Disable and stop systemd-resolved
       become: true
       become_user: root
-      systemd:
+      ansible.builtin.systemd:
         name: systemd-resolved
         enabled: false
         state: stopped
     - name: Check if /etc/resolv.conf is a symlink
       become: true
       become_user: root
-      stat:
+      ansible.builtin.stat:
         path: /etc/resolv.conf
       register: resolvconf
     - name: Remove /etc/resolv.conf symlink
       become: true
       become_user: root
-      file:
+      ansible.builtin.file:
         follow: false
         path: /etc/resolv.conf
         state: absent
@@ -32,28 +33,28 @@
     - name: Deploy /etc/resolv.conf
       become: true
       become_user: root
-      copy:
+      ansible.builtin.copy:
         src: files/resolv.conf
         dest: /etc/resolv.conf
         mode: 0644
 
     - name: Ensure .ssh dir exists
-      file:
+      ansible.builtin.file:
         path: ~/.ssh
         state: directory
         mode: 0755
     - name: Deploy authorized_keys
-      copy:
+      ansible.builtin.copy:
         src: files/authorized_keys
         dest: ~/.ssh/authorized_keys
         mode: 0600
     - name: Deploy bashrc
-      copy:
+      ansible.builtin.copy:
         src: files/bashrc
         dest: ~/.bashrc
         mode: 0644
     - name: Deploy bash_profile
-      copy:
+      ansible.builtin.copy:
         src: files/bash_profile
         dest: ~/.bash_profile
         mode: 0644
@@ -63,7 +64,7 @@
       with_items:
         - /etc/update-motd.d/10-help-text
         - /etc/update-motd.d/50-motd-news
-      file:
+      ansible.builtin.file:
         path: "{{ item }}"
         mode: 0644
     - name: Disable additional motd sections on RPi to improve login speed
@@ -73,7 +74,7 @@
         - /etc/update-motd.d/50-landscape-sysinfo
         - /etc/update-motd.d/88-esm-announce
         - /etc/update-motd.d/95-hwe-eol
-      file:
+      ansible.builtin.file:
         path: "{{ item }}"
         mode: 0644
       when:
@@ -82,14 +83,14 @@
     - name: Disable useless motd news timer
       become: true
       become_user: root
-      systemd:
+      ansible.builtin.systemd:
         name: motd-news.timer
         enabled: false
         state: stopped
     - name: Deploy sshd config
       become: true
       become_user: root
-      copy:
+      ansible.builtin.copy:
         src: files/sshd_config
         dest: /etc/ssh/sshd_config
         mode: 0644
@@ -98,7 +99,7 @@
     - name: Deploy multipath config
       become: true
       become_user: root
-      copy:
+      ansible.builtin.copy:
         src: files/multipath.conf
         dest: /etc/multipath.conf
         mode: 0644
@@ -108,14 +109,14 @@
     - name: Restart sshd
       become: true
       become_user: root
-      systemd:
+      ansible.builtin.systemd:
         name: sshd.service
         enabled: true
         state: restarted
     - name: Restart multipathd
       become: true
       become_user: root
-      systemd:
+      ansible.builtin.systemd:
         name: multipathd.service
         enabled: true
         state: restarted

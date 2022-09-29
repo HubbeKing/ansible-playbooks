@@ -1,4 +1,5 @@
 - hosts: "{{ inventory_hosts }}"
+  name: Safely reboot node
   serial: 1
   vars_prompt:
     - name: "inventory_hosts"
@@ -13,7 +14,7 @@
     - name: "Reboot host"
       become: true
       become_user: root
-      reboot:
+      ansible.builtin.reboot:
         msg: "Reboot initiated by Ansible"
         connect_timeout: 5
         reboot_timeout: 600

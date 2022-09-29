@@ -1,26 +1,26 @@
 - name: "Check if longhorn is deployed"
-  command: kubectl get ns longhorn-system
+  ansible.builtin.command: kubectl get ns longhorn-system
   register: longhorn_deployed_cmd
   delegate_to: 127.0.0.1
-  failed_when: "longhorn_deployed_cmd.rc not in [ 0, 1 ]"
+  failed_when: "longhorn_deployed_cmd.rc not in [0, 1]"
   when:
     - "'k8s_cluster' in group_names"
 
 - name: "Wait for node to be ready"
-  command: "kubectl wait --for=condition=Ready --timeout=300s node {{ host }}"
+  ansible.builtin.command: "kubectl wait --for=condition=Ready --timeout=300s node {{ host }}"
   delegate_to: 127.0.0.1
   when:
     - longhorn_deployed_cmd.rc != 1
     - "'k8s_cluster' in group_names"
 
 - name: "Uncordon node"
-  command: kubectl uncordon {{ host }}
+  ansible.builtin.command: kubectl uncordon {{ host }}
   delegate_to: 127.0.0.1
   when:
     - "'k8s_cluster' in group_names"
 
 - name: "Wait for longhorn to report 'Ready' status"
-  command: "kubectl -n longhorn-system wait --for=condition=Ready --timeout=300s nodes.longhorn.io {{ host }}"
+  ansible.builtin.command: "kubectl -n longhorn-system wait --for=condition=Ready --timeout=300s nodes.longhorn.io {{ host }}"
   delegate_to: 127.0.0.1
   when:
     - longhorn_deployed_cmd.rc != 1

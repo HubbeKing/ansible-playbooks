@@ -1,4 +1,5 @@
 - hosts: "{{ inventory_hosts }}"
+  name: Update kubelet config file on node(s)
   serial: 1
   vars_prompt:
     - name: "inventory_hosts"
@@ -8,7 +9,7 @@
     - name: Deploy kubelet config
       become: true
       become_user: root
-      copy:
+      ansible.builtin.copy:
         src: files/kubelet.yaml
         dest: /var/lib/kubelet/config.yaml
         mode: 0644
@@ -21,7 +22,7 @@
     - name: Restart kubelet
       become: true
       become_user: root
-      systemd:
+      ansible.builtin.systemd:
         daemon_reload: true
         enabled: true
         name: kubelet

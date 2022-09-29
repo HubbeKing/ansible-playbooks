@@ -1,61 +1,63 @@
 - hosts: storage
+  name: Prepare Debian RPi node for glusterfs cluster-up
   tasks:
     - name: Run full upgrade
-      apt:
+      ansible.builtin.apt:
         upgrade: full
         update_cache: true
     - name: Install htop, kitty-terminfo, and lvm2
-      apt:
-        name: 
+      ansible.builtin.apt:
+        name:
           - htop
           - kitty-terminfo
           - lvm2
         state: present
     # https://forums.raspberrypi.com/viewtopic.php?t=245931
     - name: Blacklist UAS for flaky SABRENT devices
-      copy:
+      ansible.builtin.copy:
         content: |
           usb-storage.quirks=152d:1561:u
         dest: /etc/default/raspi-extra-cmdline
         mode: 0644
       register: cmdline
     - name: Regenerate initramfs
-      command:
+      ansible.builtin.command:
         cmd: update-initramfs -u
       when: cmdline.changed
     - name: Set hostname
-      copy:
+      ansible.builtin.copy:
         content: "{{ inventory_hostname }}"
         dest: /etc/hostname
+        mode: 0644
       register: hostname
     - name: Set hosts
-      lineinfile:
+      ansible.builtin.lineinfile:
         line: "127.0.1.1 {{ inventory_hostname }}"
         mode: 0644
         path: /etc/hosts
     - name: Deploy sshd config
-      copy:
+      ansible.builtin.copy:
         src: files/sshd_config
         dest: /etc/ssh/sshd_config
         mode: 0644
       notify:
         - Restart sshd
     - name: Ensure .ssh dir exists
-      file:
+      ansible.builtin.file:
         path: ~/.ssh
         state: directory
         mode: 0755
     - name: Deploy authorized_keys
-      copy:
+      ansible.builtin.copy:
         src: files/authorized_keys
         dest: ~/.ssh/authorized_keys
         mode: 0600
     - name: Check if reboot is required for package upgrade
       register: reboot_required_file
-      stat:
+      ansible.builtin.stat:
         path: /var/run/reboot-required
     - name: Reboot host
-      reboot:
+      ansible.builtin.reboot:
         msg: Reboot initiated by Ansible
         connect_timeout: 5
         reboot_timeout: 600
@@ -64,14 +66,14 @@
         test_command: uptime
       when: reboot_required_file.stat.exists or cmdline.changed or hostname.changed
     - name: Deploy SSD udev rule
-      copy:
+      ansible.builtin.copy:
         src: files/60-ssd-scheduler.rules
         dest: /etc/udev/rules.d/60-ssd-scheduler.rules
         mode: 0644
       notify:
         - Reload udev rules
     - name: Install glusterfs
-      apt:
+      ansible.builtin.apt:
         name: glusterfs-server
         state: present
         update_cache: true
@@ -118,7 +120,7 @@
         src: "/dev/data.{{ item }}/brick"
         state: mounted
     - name: Enable & Start GlusterFS server
-      systemd:
+      ansible.builtin.systemd:
         name: glusterd
         enabled: true
         state: started
@@ -126,10 +128,10 @@
     - name: Reload udev rules
       become: true
       become_user: root
-      command:
+      ansible.builtin.command:
         cmd: udevadm control --reload-rules
     - name: Restart sshd
-      systemd:
+      ansible.builtin.systemd:
         name: sshd.service
         enabled: true
         state: restarted

@@ -1,7 +1,8 @@
 - hosts: storage
+  name: Tear down a Debian RPi-based glusterfs cluster
   tasks:
     - name: Disable & Stop GlusterFS server
-      systemd:
+      ansible.builtin.systemd:
         name: glusterd
         enabled: false
         state: stopped
@@ -44,9 +45,9 @@
       with_items:
         - /dev/sda
         - /dev/sdb
-      command:
+      ansible.builtin.command:
         cmd: "wipefs --all {{ item }}"
   handlers:
     - name: Reload udev rules
-      command:
+      ansible.builtin.command:
         cmd: udevadm control --reload-rules

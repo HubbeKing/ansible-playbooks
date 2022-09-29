@@ -1,4 +1,5 @@
 - hosts: "{{ inventory_hosts }}"
+  name: Drain kubernetes host of pods
   serial: 1
   vars_prompt:
     - name: "inventory_hosts"

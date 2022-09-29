@@ -1,4 +1,5 @@
 - hosts: debian
+  name: Ready a fresh Debian node for usage
   tasks:
     - name: Install htop, kitty-terminfo, lm-sensors, unattended-upgrades
       become: true
@@ -8,7 +9,7 @@
         - kitty-terminfo
         - lm-sensors
         - unattended-upgrades
-      apt:
+      ansible.builtin.apt:
         name: "{{ item }}"
         state: present
         autoremove: true
@@ -16,7 +17,7 @@
     - name: Deploy unattended-upgrades config
       become: true
       become_user: root
-      copy:
+      ansible.builtin.copy:
         dest: /etc/apt/apt.conf.d/20auto-upgrades
         mode: 0644
         content: |
@@ -25,34 +26,34 @@
     - name: Truncate static motd
       become: true
       become_user: root
-      copy:
+      ansible.builtin.copy:
         dest: /etc/motd
         mode: 0644
         content: ""
     - name: Deploy update-motd.d files
       become: true
       become_user: root
-      copy:
+      ansible.builtin.copy:
         src: files/update-motd.d/
         dest: /etc/update-motd.d/
         mode: 0755
     - name: Disable and stop systemd-resolved
       become: true
       become_user: root
-      systemd:
+      ansible.builtin.systemd:
         name: systemd-resolved
         enabled: false
         state: stopped
     - name: Check if /etc/resolv.conf is a symlink
       become: true
       become_user: root
-      stat:
+      ansible.builtin.stat:
         path: /etc/resolv.conf
       register: resolvconf
     - name: Remove /etc/resolv.conf symlink
       become: true
       become_user: root
-      file:
+      ansible.builtin.file:
         follow: false
         path: /etc/resolv.conf
         state: absent
@@ -60,34 +61,34 @@
     - name: Deploy /etc/resolv.conf
       become: true
       become_user: root
-      copy:
+      ansible.builtin.copy:
         src: files/resolv.conf
         dest: /etc/resolv.conf
         mode: 0644
     - name: Tell dhclient to not change resolv.conf
       become: true
       become_user: root
-      copy:
+      ansible.builtin.copy:
         dest: /etc/dhcp/dhclient-enter-hooks.d/leave_my_resolv_conf_alone
         mode: 0755
         content: "make_resolv_conf() { :; }"
     - name: Ensure .ssh dir exists
-      file:
+      ansible.builtin.file:
         path: ~/.ssh
         state: directory
         mode: 0755
     - name: Deploy authorized_keys
-      copy:
+      ansible.builtin.copy:
         src: files/authorized_keys
         dest: ~/.ssh/authorized_keys
         mode: 0600
     - name: Deploy bashrc
-      copy:
+      ansible.builtin.copy:
         src: files/bashrc
         dest: ~/.bashrc
         mode: 0644
     - name: Deploy bash_profile  # debian default PATH for non-root doesn't include sbin
-      copy:
+      ansible.builtin.copy:
         dest: ~/.bash_profile
         mode: 0644
         content: |
@@ -98,7 +99,7 @@
     - name: Deploy sshd config
       become: true
       become_user: root
-      copy:
+      ansible.builtin.copy:
         src: files/sshd_config
         dest: /etc/ssh/sshd_config
         mode: 0644
@@ -108,7 +109,7 @@
     - name: Restart sshd
       become: true
       become_user: root
-      systemd:
+      ansible.builtin.systemd:
         name: sshd.service
         enabled: true
         state: restarted
