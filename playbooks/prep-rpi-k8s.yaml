@@ -1,5 +1,5 @@
-- hosts: storage
-  name: Prepare Debian RPi node for k0s cluster-up
+- hosts: rpi
+  name: Prepare Debian RPi nodes for k3s/k0s cluster-up
   tasks:
     - name: Run full upgrade
       ansible.builtin.apt:
@@ -12,24 +12,13 @@
           - iptables
           - kitty-terminfo
         state: present
-    # https://forums.raspberrypi.com/viewtopic.php?t=245931
-    - name: Blacklist UAS for flaky SABRENT devices
-      ansible.builtin.copy:
-        content: |
-          usb-storage.quirks=152d:1561:u
-        dest: /etc/default/raspi-extra-cmdline
-        mode: 0644
-      register: cmdline
-    - name: Regenerate initramfs
-      ansible.builtin.command:
-        cmd: update-initramfs -u
-      when: cmdline.changed
     - name: Set hostname
       ansible.builtin.copy:
         content: "{{ inventory_hostname }}"
         dest: /etc/hostname
         mode: 0644
-      register: hostname
+      notify:
+        - Reboot host
     - name: Set hosts
       ansible.builtin.lineinfile:
         line: "127.0.1.1 {{ inventory_hostname }}"
@@ -59,7 +48,12 @@
         mode: 0644
       notify:
         - Reload udev rules
-    # https://rancher.com/docs/k3s/latest/en/advanced/#enabling-legacy-iptables-on-raspbian-buster
+    - name: Check which iptables is in use
+      ansible.builtin.command:
+        cmd: which iptables
+      register: which_iptables
+      when: true
+    # https://docs.k3s.io/advanced#additional-preparation-for-debian-buster-based-distributions
     - name: Switch to legacy iptables
       with_items:
         - iptables -F
@@ -67,20 +61,16 @@
         - update-alternatives --set ip6tables /usr/sbin/ip6tables-legacy
       ansible.builtin.command:
         cmd: "{{ item }}"
+      when:
+        - which_iptables.stdout.find("/usr/sbin/iptables-legacy") == -1
+      notify:
+        - Reboot node
     - name: Check if reboot is required for package upgrade
       register: reboot_required_file
       ansible.builtin.stat:
         path: /var/run/reboot-required
-    - name: Reboot host
-      ansible.builtin.reboot:
-        msg: Reboot initiated by Ansible
-        connect_timeout: 5
-        reboot_timeout: 600
-        pre_reboot_delay: 0
-        post_reboot_delay: 60
-        test_command: uptime
-      when: reboot_required_file.stat.exists or cmdline.changed or hostname.changed
-
+      notify:
+        - Reboot host
   handlers:
     - name: Reload udev rules
       ansible.builtin.command:
@@ -90,3 +80,11 @@
         name: sshd.service
         enabled: true
         state: restarted
+    - name: Reboot host
+      ansible.builtin.reboot:
+        msg: Reboot initiated by Ansible
+        connect_timeout: 5
+        reboot_timeout: 600
+        pre_reboot_delay: 0
+        post_reboot_delay: 60
+        test_command: uptime
