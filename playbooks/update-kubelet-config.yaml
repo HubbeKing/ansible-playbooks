@@ -13,12 +13,15 @@
         src: files/kubelet.yaml
         dest: /var/lib/kubelet/config.yaml
         mode: 0644
-      register: config
-    - name: Drain node
-      import_tasks: tasks/drain-node.yaml
+      notify:
+        - Drain node of workloads
+        - Restart kubelet
+        - Ready node for workloads
+  handlers:
+    - name: Drain node of workloads
+      ansible.builtin.import_tasks: tasks/drain-node.yaml
       vars:
         host: "{{ inventory_hostname }}"
-      when: config.changed
     - name: Restart kubelet
       become: true
       become_user: root
@@ -27,9 +30,7 @@
         enabled: true
         name: kubelet
         state: restarted
-      when: config.changed
-    - name: Uncordon node
-      import_tasks: tasks/uncordon-node.yaml
+    - name: Ready node for workloads
+      ansible.builtin.import_tasks: tasks/uncordon-node.yaml
       vars:
         host: "{{ inventory_hostname }}"
-      when: config.changed

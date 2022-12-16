@@ -45,6 +45,21 @@
       when:
         - pihole_cmd.stat.exists
 
+    # deploy edns packet size config
+    # see https://docs.pi-hole.net/ftldns/dnsmasq_warn/
+    - name: Ensure dnsmasq config dir exists
+      ansible.builtin.file:
+        path: /etc/dnsmasq.d/
+        state: directory
+        mode: 0755
+    - name: Deploy dnsmasq edns packet size config
+      ansible.builtin.copy:
+        content: "edns-packet-max=1232"
+        dest: /etc/dnsmasq.d/99-edns.conf
+        mode: 0644
+      notify:
+        - Restart pihole DNS
+
     # deploy gravity sync config
     - name: Ensure gravity-sync dir exists
       ansible.builtin.file:
@@ -158,3 +173,10 @@
     - name: Wait before updating next host to ensure DNS availability
       ansible.builtin.pause:
         seconds: 15
+
+  handlers:
+    - name: Restart pihole DNS
+      ansible.builtin.command:
+        argv:
+          - pihole
+          - restartdns

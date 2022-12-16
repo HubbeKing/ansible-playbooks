@@ -6,7 +6,8 @@
       prompt: "Reboot which host or group in inventory?"
       private: false
   tasks:
-    - import_tasks: tasks/drain-node.yaml
+    - name: Drain node of workloads
+      ansible.builtin.import_tasks: tasks/drain-node.yaml
       vars:
         host: "{{ inventory_hostname }}"
       when: "'k8s_cluster' in group_names"
@@ -22,7 +23,8 @@
         post_reboot_delay: 60
         test_command: uptime
 
-    - import_tasks: tasks/uncordon-node.yaml
+    - name: Ready node for workloads
+      ansible.builtin.import_tasks: tasks/uncordon-node.yaml
       vars:
         host: "{{ inventory_hostname }}"
       when: "'k8s_cluster' in group_names"

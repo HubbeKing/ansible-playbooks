@@ -15,7 +15,15 @@
       private: false
   tasks:
     - name: Get installed version for node
-      ansible.builtin.command: kubectl get node -o custom-columns=VERSION:.status.nodeInfo.kubeletVersion --no-headers {{ inventory_hostname }}
+      ansible.builtin.command:
+        argv:
+          - kubectl
+          - get
+          - node
+          - -o
+          - custom-columns=VERSION:.status.nodeInfo.kubeletVersion
+          - --no-headers
+          - "{{ inventory_hostname }}"
       register: node_version_cmd
       delegate_to: 127.0.0.1
       when: "'k8s_cluster' in group_names"
@@ -24,7 +32,8 @@
       when: node_version_cmd.stdout.find(k8s_version) == -1
       block:
         # drain
-        - import_tasks: tasks/drain-node.yaml
+        - name: Drain node of workloads
+          ansible.builtin.import_tasks: tasks/drain-node.yaml
           vars:
             host: "{{ inventory_hostname }}"
 
@@ -146,6 +155,7 @@
           when: not reboot_required_file.stat.exists
 
         # uncordon node
-        - import_tasks: tasks/uncordon-node.yaml
+        - name: Ready node for workloads
+          ansible.builtin.import_tasks: tasks/uncordon-node.yaml
           vars:
             host: "{{ inventory_hostname }}"
