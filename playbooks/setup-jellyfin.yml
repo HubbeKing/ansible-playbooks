@@ -1,0 +1,156 @@
+- hosts: rycon
+  name: Setup Jellyfin with Nvidia HW accelerated transcoding
+  tasks:
+    - name: Install nvidia driver
+      become: true
+      become_user: root
+      ansible.builtin.apt:
+        name:
+          - nvidia-driver
+          - firmware-misc-nonfree
+        state: present
+        update_cache: true
+    - name: Check if reboot is needed to enable nvidia driver
+      become: true
+      become_user: root
+      ansible.builtin.command:
+        argv:
+          - dpkg-query
+          - -l
+          - nvidia-driver
+      register: package_check
+    - name: Reboot to enable nvidia driver
+      become: true
+      become_user: root
+      ansible.builtin.reboot:
+        msg: "Reboot initiated by Ansible for nvidia driver install"
+        connect_timeout: 5
+        reboot_timeout: 600
+        pre_reboot_delay: 0
+        post_reboot_delay: 60
+        test_command: uptime
+      when: package_check is not succeeded
+    - name: Get nvidia driver patch script
+      become: true
+      become_user: root
+      ansible.builtin.get_url:
+        url: https://raw.githubusercontent.com/keylase/nvidia-patch/master/patch.sh
+        dest: /tmp/patch.sh
+        mode: 0755
+    - name: Patch nvidia driver to allow >3 simultaneous transcodes
+      become: true
+      become_user: root
+      ansible.builtin.command:
+        argv:
+          - bash
+          - /tmp/patch.sh
+    - name: Install prereqs for Jellyfin repo
+      become: true
+      become_user: root
+      ansible.builtin.apt:
+        name:
+          - curl
+          - gnupg
+        state: present
+        update_cache: true
+    - name: Create directory for Jellyfin repo signing key
+      become: true
+      become_user: root
+      ansible.builtin.file:
+        path: /etc/apt/keyrings
+        state: directory
+        mode: 0755
+    - name: Download Jellyfin repo signing key
+      become: true
+      become_user: root
+      ansible.builtin.get_url:
+        url: https://repo.jellyfin.org/debian/jellyfin_team.gpg.key
+        dest: /etc/apt/keyrings/jellyfin.asc
+        mode: 0644
+    - name: Add Jellyfin repo apt source
+      become: true
+      become_user: root
+      ansible.builtin.copy:
+        dest: /etc/apt/sources.list.d/jellyfin.sources
+        mode: 0644
+        content: |
+          Types: deb
+          URIs: https://repo.jellyfin.org/debian
+          Suites: bullseye
+          Components: main
+          Architectures: amd64
+          Signed-By: /etc/apt/keyrings/jellyfin.asc
+    - name: Install Jellyfin
+      become: true
+      become_user: root
+      ansible.builtin.apt:
+        name: jellyfin
+        state: present
+        update_cache: true
+    - name: Enable & start Jellyfin service
+      become: true
+      become_user: root
+      ansible.builtin.systemd:
+        name: jellyfin.service
+        state: started
+        enabled: true
+    - name: Ensure jellyfin user is part of video and render groups for HW accelerated transcoding
+      become: true
+      become_user: root
+      ansible.builtin.user:
+        append: true
+        name: jellyfin
+        groups:
+          - video
+          - render
+    - name: Install NFS client
+      become: true
+      become_user: root
+      ansible.builtin.apt:
+        name: nfs-common
+        state: present
+        update_cache: true
+    - name: Create root folder for NFS mounts
+      become: true
+      become_user: root
+      ansible.builtin.file:
+        path: /mnt/media
+        state: directory
+        mode: 0755
+        owner: jellyfin
+    - name: Set up NFS share mounts for DBfH media
+      become: true
+      become_user: root
+      ansible.posix.mount:
+        src: 192.168.1.121:/mnt/array/Videos/DBfH
+        path: /mnt/media/DBfH
+        opts: "rw,fsc"
+        state: mounted
+        fstype: nfs
+    - name: Set up NFS share mounts for Movies
+      become: true
+      become_user: root
+      ansible.posix.mount:
+        src: 192.168.1.121:/mnt/array/Videos/Movies
+        path: /mnt/media/Movies
+        opts: "rw,fsc"
+        state: mounted
+        fstype: nfs
+    - name: Set up NFS share mounts for TV Shows
+      become: true
+      become_user: root
+      ansible.posix.mount:
+        src: 192.168.1.121:/mnt/array/Videos/Shows
+        path: /mnt/media/Shows
+        opts: "rw,fsc"
+        state: mounted
+        fstype: nfs
+    - name: Set up NFS share mounts for Music
+      become: true
+      become_user: root
+      ansible.posix.mount:
+        src: 192.168.1.121:/mnt/array/Music
+        path: /mnt/media/Music
+        opts: "rw,fsc"
+        state: mounted
+        fstype: nfs

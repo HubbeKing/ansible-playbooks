@@ -8,10 +8,13 @@ all:
       # Raspberry Pi 3 B+
       ansible_host: 192.168.1.102
       ansible_user: root
+    athena:
+      # Raspberry Pi 4 (apcupsd)
+      ansible_host: 192.168.1.107
 
     galactica:
-      # TrueNAS Custom
-      # Intel Celeron G4900
+      # Silverstone CS380 (TrueNAS SCALE)
+      # Ryzen 5600G
       ansible_host: 192.168.1.121
 
     pacifica:
@@ -19,8 +22,8 @@ all:
       # Intel Core i3-8100
       ansible_host: 192.168.1.131
     valkyrie:
-      # Intel NUC D54250WYK
-      # Intel Core i5-4250U
+      # HP ProDesk 600 G4 DM
+      # Intel Core i5-8500T
       ansible_host: 192.168.1.132
     pegasus:
       # HP EliteDesk 800 G1 DM
@@ -35,25 +38,16 @@ all:
       # Intel Core i5-6400T
       ansible_host: 192.168.1.135
     rycon:
-      # Ryzen Custom
-      # Ryzen 5 1600
+      # Fractal Design Node 304 (Debian + Jellyfin)
+      # Intel Celeron G4900
       ansible_host: 192.168.1.136
 
-    durandal:
-      # VM
-      ansible_host: 192.168.1.141
-    shodan:
-      # VM
-      ansible_host: 192.168.1.142
   children:
-    proxmox_hosts:
-      rycon:
-    proxmox_vms:
-      durandal:
-      shodan:
     rpi:
       children:
         dns:
+      hosts:
+        athena:
     dns:
       hosts:
         osiris:
@@ -62,6 +56,9 @@ all:
       children:
         dns:
         k8s_cluster:
+      hosts:
+        athena:
+        rycon:
     longhorn:
       hosts:
         pacifica:
@@ -69,7 +66,6 @@ all:
         pegasus:
         ixion:
         atlantia:
-        durandal:
     k8s_control_plane:
       hosts:
         pacifica:
@@ -79,7 +75,6 @@ all:
       hosts:
         ixion:
         atlantia:
-        durandal:
     k8s_cluster:
       children:
         k8s_control_plane:
