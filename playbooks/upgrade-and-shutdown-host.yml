@@ -1,0 +1,49 @@
+- hosts: "{{ inventory_hosts }}"
+  name: Run package upgrade and shut down host
+  serial: 1
+  vars_prompt:
+    - name: "inventory_hosts"
+      prompt: "Upgrade packages on which host or group in inventory?"
+      private: false
+    - name: "containerd_upgrade"
+      prompt: "Upgrade containerd as well during upgrade? (y/N)"
+      default: "N"
+      private: false
+  tasks:
+    - name: "Run full upgrade"
+      become: true
+      become_user: root
+      ansible.builtin.apt:
+        upgrade: full
+        update_cache: true
+
+    # upgrade containerd.io
+    - name: "Upgrade containerd.io"
+      become: true
+      become_user: root
+      ansible.builtin.apt:
+        name: containerd.io
+        state: latest
+        update_cache: true
+        allow_change_held_packages: true
+      when: containerd_upgrade | bool
+
+    - name: "Hold containerd package"
+      become: true
+      become_user: root
+      ansible.builtin.dpkg_selections:
+        name: containerd.io
+        selection: hold
+
+    # drain node
+    - name: Drain node of workloads
+      ansible.builtin.import_tasks: tasks/drain-node.yaml
+      vars:
+        host: "{{ inventory_hostname }}"
+      when:
+        - "'k8s_cluster' in group_names"
+
+    - name: "Shut down host"
+      become: true
+      become_user: root
+      community.general.shutdown:
