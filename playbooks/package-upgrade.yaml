@@ -6,8 +6,8 @@
       prompt: "Upgrade packages on which host or group in inventory?"
       private: false
     - name: "containerd_upgrade"
-      prompt: "Upgrade containerd as well during upgrade? (y/N)"
-      default: "N"
+      prompt: "Upgrade containerd as well during upgrade? (yes/no)"
+      default: "no"
       private: false
   tasks:
     - name: "Run full upgrade"
