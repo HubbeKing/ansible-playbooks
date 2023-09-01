@@ -37,6 +37,12 @@
           vars:
             host: "{{ inventory_hostname }}"
 
+        - name: Ensure kubernetes apt key is up to date
+          become: true
+          become_user: root
+          ansible.builtin.shell:
+            cmd: curl -fsSL https://packages.cloud.google.com/apt/doc/apt-key.gpg | gpg --batch --yes --dearmor -o /usr/share/keyrings/kubernetes-archive-keyring.gpg
+
         # upgrade kubeadm package
         - name: "Upgrade kubeadm package"
           become: true
