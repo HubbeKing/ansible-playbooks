@@ -14,13 +14,13 @@
         - name: Fetch install script
           ansible.builtin.get_url:
             dest: /tmp/pihole_install.sh
-            mode: 0755
+            mode: "0755"
             url: https://install.pi-hole.net
         - name: Ensure pihole dir exists
           ansible.builtin.file:
             path: /etc/pihole
             state: directory
-            mode: 0755
+            mode: "0755"
         - name: Preseed pihole setup vars
           ansible.builtin.copy:
             content: |
@@ -34,7 +34,7 @@
               INSTALL_WEB_INTERFACE=true
               LIGHTTPD_ENABLED=true
               WEBPASSWORD=""
-            mode: 0644
+            mode: "0644"
             dest: /etc/pihole/setupVars.conf
         - name: Run installer
           ansible.builtin.command: bash /tmp/pihole_install.sh --unattended
@@ -51,12 +51,12 @@
       ansible.builtin.file:
         path: /etc/dnsmasq.d/
         state: directory
-        mode: 0755
+        mode: "0755"
     - name: Deploy dnsmasq edns packet size config
       ansible.builtin.copy:
         content: "edns-packet-max=1232"
         dest: /etc/dnsmasq.d/99-edns.conf
-        mode: 0644
+        mode: "0644"
       notify:
         - Restart pihole DNS
 
@@ -65,18 +65,18 @@
       ansible.builtin.file:
         path: /etc/gravity-sync
         state: directory
-        mode: 0755
+        mode: "0755"
     - name: Deploy gravity-sync.conf if primary DNS
       ansible.builtin.copy:
         src: files/dns/gravity-sync_primary.conf
         dest: /etc/gravity-sync/gravity-sync.conf
-        mode: 0644
+        mode: "0644"
       when: inventory_hostname == groups['dns'][0]
     - name: Deploy gravity-sync.conf if secondary DNS
       ansible.builtin.copy:
         src: files/dns/gravity-sync_secondary.conf
         dest: /etc/gravity-sync/gravity-sync.conf
-        mode: 0644
+        mode: "0644"
       when: inventory_hostname != groups['dns'][0]
 
     # set up Gravity Sync
@@ -91,7 +91,7 @@
         - name: Fetch install script
           ansible.builtin.get_url:
             dest: /tmp/gravity-sync_install.sh
-            mode: 0755
+            mode: "0755"
             url: https://gravity.vmstan.com
         - name: Run installer
           ansible.builtin.command: bash /tmp/gravity-sync_install.sh
@@ -107,19 +107,19 @@
       ansible.builtin.file:
         path: /etc/keepalived
         state: directory
-        mode: 0755
+        mode: "0755"
     - name: Deploy keepalived.conf if primary DNS
       ansible.builtin.copy:
         src: files/dns/keepalived_primary.conf
         dest: /etc/keepalived/keepalived.conf
-        mode: 0644
+        mode: "0644"
       when: inventory_hostname == groups['dns'][0]
       register: primary_config
     - name: Deploy keepalived.conf if secondary DNS
       ansible.builtin.copy:
         src: files/dns/keepalived_secondary.conf
         dest: /etc/keepalived/keepalived.conf
-        mode: 0644
+        mode: "0644"
       when: inventory_hostname != groups['dns'][0]
       register: secondary_config
     - name: Create keepalived_script user
@@ -131,14 +131,14 @@
       ansible.builtin.file:
         path: /etc/keepalived_scripts
         state: directory
-        mode: 0755
+        mode: "0755"
         owner: keepalived_script
         group: keepalived_script
     - name: Deploy DNS check script
       ansible.builtin.copy:
         src: files/dns/check_dns.sh
         dest: /etc/keepalived_scripts/check_dns.sh
-        mode: 0700
+        mode: "0700"
         owner: keepalived_script
         group: keepalived_script
       register: check_script

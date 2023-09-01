@@ -12,7 +12,7 @@
       ansible.builtin.copy:
         src: files/kubelet.yaml
         dest: /var/lib/kubelet/config.yaml
-        mode: 0644
+        mode: "0644"
       notify:
         - Drain node of workloads
         - Restart kubelet

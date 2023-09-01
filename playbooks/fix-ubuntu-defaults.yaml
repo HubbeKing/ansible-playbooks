@@ -36,28 +36,28 @@
       ansible.builtin.copy:
         src: files/resolv.conf
         dest: /etc/resolv.conf
-        mode: 0644
+        mode: "0644"
 
     - name: Ensure .ssh dir exists
       ansible.builtin.file:
         path: ~/.ssh
         state: directory
-        mode: 0755
+        mode: "0755"
     - name: Deploy authorized_keys
       ansible.builtin.copy:
         src: files/authorized_keys
         dest: ~/.ssh/authorized_keys
-        mode: 0600
+        mode: "0600"
     - name: Deploy bashrc
       ansible.builtin.copy:
         src: files/bashrc
         dest: ~/.bashrc
-        mode: 0644
+        mode: "0644"
     - name: Deploy bash_profile
       ansible.builtin.copy:
         src: files/bash_profile
         dest: ~/.bash_profile
-        mode: 0644
+        mode: "0644"
     - name: Disable motd sections (chmod -x)
       become: true
       become_user: root
@@ -66,7 +66,7 @@
         - /etc/update-motd.d/50-motd-news
       ansible.builtin.file:
         path: "{{ item }}"
-        mode: 0644
+        mode: "0644"
     - name: Disable additional motd sections on RPi to improve login speed
       become: true
       become_user: root
@@ -76,7 +76,7 @@
         - /etc/update-motd.d/95-hwe-eol
       ansible.builtin.file:
         path: "{{ item }}"
-        mode: 0644
+        mode: "0644"
       when:
         - "'rpi' in group_names"
 
@@ -93,7 +93,7 @@
       ansible.builtin.copy:
         src: files/sshd_config
         dest: /etc/ssh/sshd_config
-        mode: 0644
+        mode: "0644"
       notify:
         - Restart sshd
     - name: Deploy multipath config
@@ -102,7 +102,7 @@
       ansible.builtin.copy:
         src: files/multipath.conf
         dest: /etc/multipath.conf
-        mode: 0644
+        mode: "0644"
       notify:
         - Restart multipathd
   handlers:

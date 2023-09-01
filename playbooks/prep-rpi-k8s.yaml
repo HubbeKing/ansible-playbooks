@@ -16,36 +16,36 @@
       ansible.builtin.copy:
         content: "{{ inventory_hostname }}"
         dest: /etc/hostname
-        mode: 0644
+        mode: "0644"
       notify:
         - Reboot host
     - name: Set hosts
       ansible.builtin.lineinfile:
         line: "127.0.1.1 {{ inventory_hostname }}"
-        mode: 0644
+        mode: "0644"
         path: /etc/hosts
     - name: Deploy sshd config
       ansible.builtin.copy:
         src: files/sshd_config
         dest: /etc/ssh/sshd_config
-        mode: 0644
+        mode: "0644"
       notify:
         - Restart sshd
     - name: Ensure .ssh dir exists
       ansible.builtin.file:
         path: ~/.ssh
         state: directory
-        mode: 0755
+        mode: "0755"
     - name: Deploy authorized_keys
       ansible.builtin.copy:
         src: files/authorized_keys
         dest: ~/.ssh/authorized_keys
-        mode: 0600
+        mode: "0600"
     - name: Deploy SSD udev rule
       ansible.builtin.copy:
         src: files/60-ssd-scheduler.rules
         dest: /etc/udev/rules.d/60-ssd-scheduler.rules
-        mode: 0644
+        mode: "0644"
       notify:
         - Reload udev rules
     - name: Check which iptables is in use

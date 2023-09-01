@@ -36,7 +36,7 @@
       ansible.builtin.get_url:
         url: https://raw.githubusercontent.com/keylase/nvidia-patch/master/patch.sh
         dest: /tmp/patch.sh
-        mode: 0755
+        mode: "0755"
     - name: Patch nvidia driver to allow >3 simultaneous transcodes
       become: true
       become_user: root
@@ -59,20 +59,20 @@
       ansible.builtin.file:
         path: /etc/apt/keyrings
         state: directory
-        mode: 0755
+        mode: "0755"
     - name: Download Jellyfin repo signing key
       become: true
       become_user: root
       ansible.builtin.get_url:
         url: https://repo.jellyfin.org/debian/jellyfin_team.gpg.key
         dest: /etc/apt/keyrings/jellyfin.asc
-        mode: 0644
+        mode: "0644"
     - name: Add Jellyfin repo apt source
       become: true
       become_user: root
       ansible.builtin.copy:
         dest: /etc/apt/sources.list.d/jellyfin.sources
-        mode: 0644
+        mode: "0644"
         content: |
           Types: deb
           URIs: https://repo.jellyfin.org/debian
@@ -116,7 +116,7 @@
       ansible.builtin.file:
         path: /mnt/media
         state: directory
-        mode: 0755
+        mode: "0755"
         owner: jellyfin
     - name: Set up NFS share mounts for DBfH media
       become: true
