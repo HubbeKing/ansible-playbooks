@@ -37,12 +37,23 @@
         src: files/update-motd.d/
         dest: /etc/update-motd.d/
         mode: "0755"
+    - name: Ensure systemd-resolved is not installed (If Debian >=12)
+      become: true
+      become_user: root
+      ansible.builtin.apt:
+        name: systemd-resolved
+        state: absent
+        autoremove: true
+        purge: true
+      when: ansible_facts["distribution_major_version"] | int >= 12
+    - name: Disable and stop systemd-resolved service (If Debian <12)
       become: true
       become_user: root
       ansible.builtin.systemd:
         name: systemd-resolved
         enabled: false
         state: stopped
+      when: ansible_facts["distribution_major_version"] | int < 12
     - name: Check if /etc/resolv.conf is a symlink
       become: true
       become_user: root
