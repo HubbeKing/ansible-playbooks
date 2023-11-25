@@ -106,20 +106,3 @@
             source "$HOME/.bashrc"
           fi
           PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
-    - name: Deploy sshd config
-      become: true
-      become_user: root
-      ansible.builtin.copy:
-        src: files/sshd_config
-        dest: /etc/ssh/sshd_config
-        mode: "0644"
-      notify:
-        - Restart sshd
-  handlers:
-    - name: Restart sshd
-      become: true
-      become_user: root
-      ansible.builtin.systemd:
-        name: sshd.service
-        enabled: true
-        state: restarted
