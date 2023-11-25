@@ -37,18 +37,32 @@
           vars:
             host: "{{ inventory_hostname }}"
 
+        - name: Create variable for kubernetes major version
+          ansible.builtin.set_fact:
+            k8s_major_version: "{{ k8s_version[:-2] }}"
+
         - name: Ensure kubernetes apt key is up to date
           become: true
           become_user: root
-          ansible.builtin.shell:
-            cmd: curl -fsSL https://packages.cloud.google.com/apt/doc/apt-key.gpg | gpg --batch --yes --dearmor -o /usr/share/keyrings/kubernetes-archive-keyring.gpg
+          ansible.builtin.get_url:
+            url: "https://pkgs.k8s.io/core:/stable:/v{{ k8s_major_version }}/deb/Release.key"
+            dest: '/etc/apt/keyrings/kubernetes-apt-keyring.asc'
+            mode: '0644'
+
+        - name: Ensure kubernetes repo configuration is up to date
+          become: true
+          become_user: root
+          ansible.builtin.copy:
+            content: "deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.asc] https://pkgs.k8s.io/core:/stable:/v{{ k8s_major_version }}/deb/ /"
+            dest: /etc/apt/sources.list.d/kubernetes.list
+            mode: "0644"
 
         # upgrade kubeadm package
         - name: "Upgrade kubeadm package"
           become: true
           become_user: root
           ansible.builtin.apt:
-            name: kubeadm={{ k8s_version }}-00
+            name: kubeadm={{ k8s_version }}-1.1
             state: present
             update_cache: true
             allow_change_held_packages: true
@@ -89,8 +103,8 @@
             update_cache: true
             allow_change_held_packages: true
           with_items:
-            - kubelet={{ k8s_version }}-00
-            - kubectl={{ k8s_version }}-00
+            - kubelet={{ k8s_version }}-1.1
+            - kubectl={{ k8s_version }}-1.1
         - name: "Hold kubelet package"
           become: true
           become_user: root
