@@ -1,17 +1,5 @@
 all:
   hosts:
-    osiris:
-      # Raspberry Pi 3 B+
-      ansible_host: 192.168.1.101
-      ansible_user: root
-    solaria:
-      # Raspberry Pi 3 B+
-      ansible_host: 192.168.1.102
-      ansible_user: root
-    athena:
-      # Raspberry Pi 4 (apcupsd)
-      ansible_host: 192.168.1.107
-
     galactica:
       # Silverstone CS380 (TrueNAS SCALE)
       # Ryzen 5600G
@@ -26,8 +14,8 @@ all:
       # Intel Core i5-8500T
       ansible_host: 192.168.1.132
     pegasus:
-      # HP EliteDesk 800 G1 DM
-      # Intel Core i5-4590T
+      #  HP EliteDesk 800 G4 DM
+      # Intel Core i5-8600
       ansible_host: 192.168.1.133
     ixion:
       # Dell Optiplex 7040M
@@ -39,21 +27,9 @@ all:
       ansible_host: 192.168.1.135
 
   children:
-    rpi:
-      children:
-        dns:
-      hosts:
-        athena:
-    dns:
-      hosts:
-        osiris:
-        solaria:
     debian:
       children:
-        dns:
         k8s_cluster:
-      hosts:
-        athena:
     longhorn:
       hosts:
         pacifica:
