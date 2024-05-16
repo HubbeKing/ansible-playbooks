@@ -62,7 +62,7 @@
           become: true
           become_user: root
           ansible.builtin.apt:
-            name: kubeadm={{ k8s_version }}-1.1
+            name: kubeadm={{ k8s_version }}-*
             state: present
             update_cache: true
             allow_change_held_packages: true
@@ -103,8 +103,8 @@
             update_cache: true
             allow_change_held_packages: true
           with_items:
-            - kubelet={{ k8s_version }}-1.1
-            - kubectl={{ k8s_version }}-1.1
+            - kubelet={{ k8s_version }}-*
+            - kubectl={{ k8s_version }}-*
         - name: "Hold kubelet package"
           become: true
           become_user: root
