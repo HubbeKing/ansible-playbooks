@@ -70,7 +70,7 @@
         src: files/normal-shutdown.sh
         dest: /etc/scripts/shutdown.sh
         mode: "0755"
-      when: inventory hostname not in groups["k8s_control_plane"]
+      when: inventory_hostname not in groups["k8s_control_plane"]
     - name: Deploy startup script (k8s_control_plane)
       become: true
       become_user: root
