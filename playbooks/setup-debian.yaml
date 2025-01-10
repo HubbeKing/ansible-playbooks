@@ -1,13 +1,13 @@
 - hosts: debian
   name: Ready a fresh Debian node for usage
   tasks:
-    - name: Install htop, kitty-terminfo, lm-sensors, unattended-upgrades
+    - name: Install htop, lm-sensors, nut-client, unattended-upgrades
       become: true
       become_user: root
       with_items:
         - htop
-        - kitty-terminfo
         - lm-sensors
+        - nut-client
         - unattended-upgrades
       ansible.builtin.apt:
         name: "{{ item }}"
@@ -23,6 +23,69 @@
         content: |
           APT::Periodic::Update-Package-Lists "1";
           APT::Periodic::Unattended-Upgrade "1";
+    - name: Deploy nut.conf
+      become: true
+      become_user: root
+      ansible.builtin.copy:
+        src: files/nut.conf
+        dest: /etc/nut/nut.conf
+        mode: "0644"
+      notify:
+        - Restart nut-monitor
+    - name: Deploy upsmon.conf
+      become: true
+      become_user: root
+      ansible.builtin.copy:
+        src: files/upsmon.conf
+        dest: /etc/nut/upsmon.conf
+        mode: "0644"
+      notify:
+        - Restart nut-monitor
+    - name: Enable nut-monitor service
+      become: true
+      become_user: root
+      ansible.builtin.systemd_service:
+        name: nut-monitor
+        enabled: true
+
+    - name: Ensure scripts folder exists
+      become: true
+      become_user: root
+      ansible.builtin.file:
+        path: /etc/scripts/
+        state: directory
+        mode: "0755"
+    - name: Deploy shutdown script (k8s_control_plane)
+      become: true
+      become_user: root
+      ansible.builtin.copy:
+        src: files/k8s-control-plane-shutdown.sh
+        dest: /etc/scripts/shutdown.sh
+        mode: "0755"
+      when: inventory_hostname in groups["k8s_control_plane"]
+    - name: Deploy shutdown script (other nodes)
+      become: true
+      become_user: root
+      ansible.builtin.copy:
+        src: files/normal-shutdown.sh
+        dest: /etc/scripts/shutdown.sh
+        mode: "0755"
+      when: inventory hostname not in groups["k8s_control_plane"]
+    - name: Deploy startup script (k8s_control_plane)
+      become: true
+      become_user: root
+      ansible.builtin.copy:
+        src: files/k8s-control-plane-startup.sh
+        dest: /etc/scripts/startup.sh
+        mode: "0755"
+      when: inventory_hostname in groups["k8s_control_plane"]
+    - name: Set startup script to run @reboot (k8s_control_plane)
+      ansible.builtin.cron:
+        name: "Scale-up k8s statefulsets"
+        special_time: reboot
+        job: "/etc/scripts/startup.sh"
+      when: inventory_hostname in groups["k8s_control_plane"]
+
     - name: Truncate static motd
       become: true
       become_user: root
@@ -49,7 +112,7 @@
     - name: Disable and stop systemd-resolved service (If Debian <12)
       become: true
       become_user: root
-      ansible.builtin.systemd:
+      ansible.builtin.systemd_service:
         name: systemd-resolved
         enabled: false
         state: stopped
@@ -106,3 +169,11 @@
             source "$HOME/.bashrc"
           fi
           PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+
+  handlers:
+    - name: Restart nut-monitor
+      become: true
+      become_user: root
+      ansible.builtin.systemd_service:
+        name: nut-monitor
+        state: restarted
