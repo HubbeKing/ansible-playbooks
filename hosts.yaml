@@ -23,11 +23,18 @@ all:
       ansible_host: 192.168.1.134
     atlantia:
       # Lenovo Thinkcentre M700 Tiny
-      # Intel Core i5-6400T
+      # Intel Core i7-6700T
       ansible_host: 192.168.1.135
+    athena:
+      # Lenovo Thinkcentre M700 Tiny
+      # Intel Core i5-6400T
+      ansible_host: 192.168.1.136
+
 
   children:
     debian:
+      hosts:
+        athena:
       children:
         k8s_cluster:
     longhorn:
@@ -46,6 +53,7 @@ all:
       hosts:
         ixion:
         atlantia:
+        athena:
     k8s_cluster:
       children:
         k8s_control_plane:
