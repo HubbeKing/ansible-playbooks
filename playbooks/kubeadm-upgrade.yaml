@@ -57,6 +57,22 @@
             dest: /etc/apt/sources.list.d/kubernetes.list
             mode: "0644"
 
+        - name: Ensure CRI-O apt key is up to date
+          become: true
+          become_user: root
+          ansible.builtin.get_url:
+            url: "https://download.opensuse.org/repositories/isv:/cri-o:/stable:/{{ k8s_major_version }}/deb/Release.key "
+            dest: '/etc/apt/keyrings/cri-o-apt-keyring.asc'
+            mode: '0644'
+
+        - name: Ensure CRI-O repo configuration is up to date
+          become: true
+          become_user: root
+          ansible.builtin.copy:
+            content: deb [signed-by=/etc/apt/keyrings/cri-o-apt-keyring.asc] https://download.opensuse.org/repositories/isv:/cri-o:/stable:/{{ k8s_major_version }}/deb/ /
+            dest: '/etc/apt/sources.list.d/cri-o.list'
+            mode: '0644'
+
         # upgrade kubeadm package
         - name: "Upgrade kubeadm package"
           become: true
@@ -118,20 +134,20 @@
             name: kubectl
             selection: hold
 
-        # upgrade containerd.io
-        - name: "Upgrade containerd.io"
+        # upgrade cri-o
+        - name: "Upgrade cri-o"
           become: true
           become_user: root
           ansible.builtin.apt:
-            name: containerd.io
+            name: cri-o
             state: latest
             update_cache: true
             allow_change_held_packages: true
-        - name: "Hold containerd package"
+        - name: "Hold cri-o package"
           become: true
           become_user: root
           ansible.builtin.dpkg_selections:
-            name: containerd.io
+            name: cri-o
             selection: hold
 
         # run full-upgrade
@@ -160,8 +176,8 @@
             test_command: uptime
           when: reboot_required_file.stat.exists
 
-        # else restart kubelet & containerd.io
-        - name: "Restart containerd and kubelet"
+        # else restart kubelet & cri-o
+        - name: "Restart cri-o and kubelet"
           become: true
           become_user: root
           ansible.builtin.systemd:
@@ -170,7 +186,7 @@
             name: "{{ item }}"
             state: restarted
           with_items:
-            - containerd
+            - crio
             - kubelet
           when: not reboot_required_file.stat.exists
 

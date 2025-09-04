@@ -5,8 +5,8 @@
     - name: "inventory_hosts"
       prompt: "Upgrade packages on which host or group in inventory?"
       private: false
-    - name: "containerd_upgrade"
-      prompt: "Upgrade containerd as well during upgrade? (y/N)"
+    - name: "crio_upgrade"
+      prompt: "Upgrade CRI-O as well during upgrade? (y/N)"
       default: "N"
       private: false
   tasks:
@@ -17,22 +17,22 @@
         upgrade: full
         update_cache: true
 
-    # upgrade containerd.io
-    - name: "Upgrade containerd.io"
+    # upgrade CRI-O
+    - name: "Upgrade cri-o"
       become: true
       become_user: root
       ansible.builtin.apt:
-        name: containerd.io
+        name: cri-o
         state: latest
         update_cache: true
         allow_change_held_packages: true
-      when: containerd_upgrade | bool
+      when: crio_upgrade | bool
 
-    - name: "Hold containerd package"
+    - name: "Hold cri-o package"
       become: true
       become_user: root
       ansible.builtin.dpkg_selections:
-        name: containerd.io
+        name: cri-o
         selection: hold
 
     # drain node
