@@ -6,8 +6,8 @@ all:
       ansible_host: 192.168.1.121
 
     pacifica:
-      # ASRock DeskMini 310
-      # Intel Core i3-8100
+      # Lenovo Thinkcentre M920q Tiny
+      # Intel Core i7-8700T
       ansible_host: 192.168.1.131
     valkyrie:
       # HP ProDesk 600 G4 DM
