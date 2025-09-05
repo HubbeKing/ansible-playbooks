@@ -33,8 +33,6 @@ all:
 
   children:
     debian:
-      hosts:
-        athena:
       children:
         k8s_cluster:
     longhorn:
@@ -44,6 +42,7 @@ all:
         pegasus:
         ixion:
         atlantia:
+        athena:
     k8s_control_plane:
       hosts:
         pacifica:
