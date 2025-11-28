@@ -61,7 +61,7 @@
           become: true
           become_user: root
           ansible.builtin.get_url:
-            url: "https://download.opensuse.org/repositories/isv:/cri-o:/stable:/{{ k8s_major_version }}/deb/Release.key "
+            url: "https://download.opensuse.org/repositories/isv:/cri-o:/stable:/v{{ k8s_major_version }}/deb/Release.key "
             dest: '/etc/apt/keyrings/cri-o-apt-keyring.asc'
             mode: '0644'
 
@@ -69,7 +69,7 @@
           become: true
           become_user: root
           ansible.builtin.copy:
-            content: deb [signed-by=/etc/apt/keyrings/cri-o-apt-keyring.asc] https://download.opensuse.org/repositories/isv:/cri-o:/stable:/{{ k8s_major_version }}/deb/ /
+            content: deb [signed-by=/etc/apt/keyrings/cri-o-apt-keyring.asc] https://download.opensuse.org/repositories/isv:/cri-o:/stable:/v{{ k8s_major_version }}/deb/ /
             dest: '/etc/apt/sources.list.d/cri-o.list'
             mode: '0644'
 
