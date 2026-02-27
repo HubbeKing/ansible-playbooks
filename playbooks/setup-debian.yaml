@@ -48,44 +48,6 @@
         name: nut-monitor
         enabled: true
 
-    - name: Ensure scripts folder exists
-      become: true
-      become_user: root
-      ansible.builtin.file:
-        path: /etc/scripts/
-        state: directory
-        mode: "0755"
-    - name: Deploy shutdown script (k8s_control_plane)
-      become: true
-      become_user: root
-      ansible.builtin.copy:
-        src: files/k8s-control-plane-shutdown.sh
-        dest: /etc/scripts/shutdown.sh
-        mode: "0755"
-      when: inventory_hostname in groups["k8s_control_plane"]
-    - name: Deploy shutdown script (other nodes)
-      become: true
-      become_user: root
-      ansible.builtin.copy:
-        src: files/normal-shutdown.sh
-        dest: /etc/scripts/shutdown.sh
-        mode: "0755"
-      when: inventory_hostname not in groups["k8s_control_plane"]
-    - name: Deploy startup script (k8s_control_plane)
-      become: true
-      become_user: root
-      ansible.builtin.copy:
-        src: files/k8s-control-plane-startup.sh
-        dest: /etc/scripts/startup.sh
-        mode: "0755"
-      when: inventory_hostname in groups["k8s_control_plane"]
-    - name: Set startup script to run @reboot (k8s_control_plane)
-      ansible.builtin.cron:
-        name: "Scale-up k8s statefulsets"
-        special_time: reboot
-        job: "/etc/scripts/startup.sh"
-      when: inventory_hostname in groups["k8s_control_plane"]
-
     - name: Truncate static motd
       become: true
       become_user: root
